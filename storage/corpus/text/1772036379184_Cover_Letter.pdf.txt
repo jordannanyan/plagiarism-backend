@@ -1,0 +1,34 @@
+Dear Hiring Manager,
+I am writing to express my interest in the Full Stack Developer role at Credit Corp. With extensive
+experience in .NET development, SQL engineering, and modern web technologies, I am confident in
+my ability to contribute effectively to initiatives that support business operations and deliver
+sustainable financial solutions.
+Throughout my career, I have worked across the full development lifecycle, from requirements
+gathering and solution design to implementation, testing, and deployment. I have strong experience
+building enterprise-grade applications using C# and the .NET Framework, as well as developing
+secure Web APIs and front-end interfaces. My background includes working with Angular to create
+responsive, maintainable web applications that integrate seamlessly with backend services.
+I have over six years of experience working with SQL databases, including writing optimized T-SQL
+queries, developing stored procedures, troubleshooting performance issues, and ensuring data
+integrity. I am also familiar with SSIS and reporting tools, and I understand the importance of reliable
+data pipelines and reporting systems in business-critical environments. Diagnosing and resolving
+SQL-related issues in production systems has been a key part of my responsibilities, and I approach
+database performance and stability with careful attention to detail.
+In addition to my technical expertise, I am comfortable translating business requirements into
+structured technical solutions. I enjoy working closely with stakeholders to understand operational
+challenges and designing systems that improve efficiency, scalability, and maintainability. I have also
+supported deployment processes and continuous improvement initiatives, ensuring that applications
+evolve alongside business needs.
+Mentoring and collaboration are important aspects of my professional approach. I value guiding less
+experienced developers, conducting code reviews, and maintaining high engineering standards
+within a team. Strong communication, organization, and time management skills allow me to
+manage multiple priorities effectively while maintaining quality and reliability.
+Credit Corp’s commitment to providing sustainable financial services and improving customer
+outcomes is inspiring. I am motivated by the opportunity to apply my technical experience within a
+purpose-driven organization that values growth, development, and strong engineering practices.
+Thank you for considering my application. I look forward to the opportunity to further discuss how
+my experience and skills align with Credit Corp’s goals.
+Sincerely,
+Jordan Nanyan
+
+-- 1 of 1 --

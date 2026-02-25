@@ -1,0 +1,521 @@
+SQUARE : Journal of Mathematics and Mathematics Education
+Volume 5, No. 2, 2023, pp. 93-105
+http://dx.doi.org/10.21580/square.2023.5.2.17059
+e-ISSN: 2714-5506
+p-ISSN: 2714-609X
+Perbandingan ARIMA dan ARIMAX untuk Memprediksi Jumlah
+Produksi Padi di Kota Magelang
+Ihsan Fathoni Amri, Wulan Nur Ramadhan *
+, Safira Ainurrofiah, M. Al Haris
+Universitas Muhammadiyah Semarang
+*
+wulannur098@gmail.com
+ABSTRAK
+Memprediksi atau meramalkan perilaku observasi biasanya menggunakan pemodelan time series
+yang dilakukan secara berurutan. Prediksi jumlah produksi padi diharapkan dapat memberikan
+masukan bagi pemerintah dan dimanfaatkan oleh siapa saja sebagai pengembangan pada sektor
+pertanian serta sebagai bahan ajar penggunaan metode ARIMA (Autoregressive Integrated Moving
+Average) dan ARIMAX (Autoregressive Integrated Moving Average with Exogenous Variable).
+Tujuan dari penelitian ini sebagai perbandingan dalam menemukan model terbaik dari metode
+ARIMA dan ARIMAX untuk memprediksi jumlah produksi padi pada tahun 2023 di kota Magelang.
+Data yang digunakan merupakan data produksi padi dan luas lahan tanam sebagai variabel eksogen
+di Kota Magelang pada bulan Januari 2019 sampai Desember 2022. Berdasarkan hasil analisis,
+diperoleh model ARIMA terbaik untuk meramalkan jumlah produksi padi di kota Malang adalah
+ARIMA (0,1,1), sedangnkan model ARIMAX terbaik adalah ARIMAX (0,0,1). Perbandingan kedua
+model tersebut berdasarkan nilai MAPE, model ARIMAX (0,0,1) menjadi model terbaik untuk
+meramalkan jumlah produksi padi di Kota Malang karena menghasilkan MAPE terkecil 6,31%.
+Hasil peramalan menggunakan model ARIMAX (0,0,1) menunjukkan data cenderung mengalami
+pola trend turun. Hal ini dikarenakan lahan pertanian yang semakin sempit setiap tahunnya sehingga
+menyebabkan jumlah produksinya semakin menurun.
+Kata Kunci: Pemodelan, metode ARIMA, metode ARIMAX, Produksi Padi.
+ABSTRACT
+Predicting or forecasting the observational behavior usually uses time series modeling conducted
+sequentially. The prediction of rice production is expected to provide input for the government and
+be utilized by anyone for the development of the agricultural sector as well as teaching materials
+for the use of ARIMA (Autoregressive Integrated Moving Average) and ARIMAX (Autoregressive
+Integrated Moving Average with Exogenous Variable) methods. The purpose of this research is to
+compare and find the best model between the ARIMA and ARIMAX methods to predict the amount
+of rice production in 2023 in Magelang City. The data used are rice production data and land area
+as exogenous variables in Magelang City from January 2019 to December 2022. Based on the
+analysis results, the best ARIMA model for forecasting rice production in Malang City is ARIMA
+(0,1,1), while the best ARIMAX model is ARIMAX (0,0,1). Comparing the two models based on
+MAPE values, the ARIMAX (0,0,1) model is the best model for forecasting rice production in Malang
+City because it produces the smallest MAPE of 6.31%. The forecast results using the ARIMAX
+(0,0,1) model show a downward trend pattern. This is due to the shrinking agricultural land each
+year, causing the production amount to decrease.
+Keywords: Modeling, ARIMA method, ARIMAX method, Rice Production.
+
+-- 1 of 14 --
+
+94 | Ihsan Fathoni Amri, Wulan Nur Ramadhan, Safira Ainurrofiah, M. Al Haris - Perbandingan ARIMA dan ARIMAX untuk ...
+1. PENDAHULUAN
+Indonesia dengan potensi besar dibidang pertanian belum menjamin akan terpenuhinya
+kebutuhan masyarakat dalam memenuhi kebutuhan hidupnya dikarenakan kecenderungan
+menurunnya lahan pertanian (Pamularsih et al., 2021). Kabupaten Magelang merupakan daerah
+dengan luas lahan sawah menurut jenis pengairan sebesar 27.026 ha dengan uraian 22383 ha
+sebagai irigasi, dan 4.643 sebagai tadah hujan. Berdasarkan data Badan Pusat Statistik Kota
+Magelang menunjukkan bahwa hasil produksi padi di kota malang dari tahun 2019 ke 2020
+mengalami penurunan sekitar 20,42% atau sekitar 42.930 (kh/ha).
+Padi memiliki pengaruh besar dalam sektor pertanian yang dijadikan sebagai bahan pokok
+di Indonesia (G. A. M. Lestari et al., 2021). Kestabilan stok padi dapat menjadi sangat penting
+karena untuk persediaan serta konsumsi masyarakat yang semakin naik dan padi yang
+dihasilkan bergantung pada produktivitas gabah hasil pertanian (Kalsum et al., 2020).
+Ketersediaan beras dengan harga terjangkau bagi masyarakat dapat menjaga ketahanan nasional
+dan stabilitas pemerintah (Wijaya et al., 2022), sehingga jika masyarakat menjadikan beras
+sebagai makanan pokok yang sulit digantikan, maka kestabilan produksi beras akan
+menentukan pada sisi banyaknya permintaan beras di pasar.
+Di Jawa Tengah kebutuhan pangan terus meningkat sama dengan produksi padi yang
+berfluktuasi dari tahun ke tahun lainnya. Salah satunya faktor yang mempengaruhi tingkat
+produksi padi di Jawa Tengah yaitu lahan pertanian yang cenderung berkurang (Khakim et al.,
+2013). Menurut (Onibala et al., 2017), luas lahan dapat mempengaruhi produksi padi dengan
+taraf signifikan 1% sedangkan variabel luas lahan memiliki nilai koefisien yaitu 0,9331.
+Sehingga setiap penambahan 1% pada luas lahan maka produksi padi akan meningkat sebesar
+0,9331. Jika semakin sempit lahannya maka semakin berkurang hasil produksi padi. Hasil
+produksi padi tersebut akan dijadikan sebagai kebutuhan pangan bagi masyarakat.
+Permasalahan dalam kenaikan permintaan pasar terhadap kebutuhan pangan tersebut akan
+menjadi kendala yang akan terus dialami masyarakat selama bertahun tahun (Wijaya et al.,
+2022). Program intensifikasi dan ekstensifikasi menjadi salah satu upaya peningkatan produksi
+beras nasional karena tingginya dependensi Indonesia terhadap impor beras dunia (Mafor,
+2015). Meningkatnya permintaan yang tidak diimbangi dengan produksi padi akan berdampak
+pada masyarakat karena tidak tercukupinya kebutuhan beras secara nasional. Oleh sebab itu,
+strategi dalam meningkatkan produksi padi (supply side) penting untuk dilaksanakan
+(Hilalullaily et al., 2021). Salah satu kebijakan pemerintah yang dapat diterapkan yaitu
+melakukan prediksi produksi padi di masa mendatang sebagai langkah awal untuk menentukan
+kebijakan yang tepat. Hasil prediksi tersebut diharapkan dapat menjadi masukkan bagi
+pemerintah sebagai bahan evaluasi dan perbaikan (Kumila et al., 2019).
+Memprediksi atau meramalkan perilaku observasi biasanya menggunakan pemodelan
+time series yang diambil dari waktu ke waktu (Hadiansyah, 2017). Memprediksi suatu observasi
+yang berkaitan dengan runtun waktu telah banyak digunakan dalam model time series seperti
+penelitian yang dilakukan oleh (Hidayat & Hakim, 2021) tentang peramalan ekspor luar negeri
+banten menggunakan model ARIMAX. Hasil penelitian ini menunjukkan bahwa metode ini
+melakukan peramalan yang baik dengan melihat nilai MAPE mencapai 8,84 namun akurasi
+peramalan akan turun seiring bertambahnya panjang waktu. Penelitian lain juga dilakukan oleh
+(Rusyida & Pratama, 2020)(Rusyida & Pratama, 2020) membahas tentang prediksi harga saham
+
+-- 2 of 14 --
+
+Square : Jurnal Pendidikan Matematika dan Matematika, Volume 5, Nomor 2, 2023, pp. 93-105 | 95
+PT.Garuda Indonesia pada tahun 2020 dengan model yang didapat adalah ARIMA(3,1,2).
+Selanjutnya penelitian oleh (Riestiansyah et al., 2022) yang membahas tentang perbandingan
+metode ARIMA dan ARIMAX yang menunjukkan bahwa ARIMA(0,1,1) hasil peramalannya
+cenderung datar sedangkan ARIMAX menghasilkan grafik peramalan yang mempu mengikuti
+pola data aktual bila dibandingkan dengan hasil model ARIMA.
+Suatu proses yang memperkirakan suatu nilai pada masa yang akan datang dengan
+menggunakan data pada masa lampau disebut sebagai peramalan (Suryani et al., 2018).
+Peramalan dapat digunakan sebagai dasar perencanaan jangka pendek ataupun jangka panjang
+(Amri et al., 2024; Choiriyah et al., 2020). Metode yang digunakan untuk melakukan sebuah
+peramalan, salah satunya adalah Metode Autoregressive Integrated Moving Average (ARIMA).
+ARIMA ialah suatu model yang mengabaikan independen variabel dengan memanfaatkan nilai
+pada masa lalu dan sekarang untuk menciptakan peramalan yang akurat untuk jangka pendek
+(Pradana et al., 2020). Model ARIMA disebut sebagai model Box-Jenkins yang datanya harus
+stasioner antara rata-rata dengan varian pada setiap titiknya. ARIMA dicirikan oleh tiga faktor
+yaitu p,d, dan q (Li & Wang, 2013) dan proses ARIMA terdiri dari tiga proses yaitu
+Autoregressive (AR), Moving Average (MA) dan Differencing (Adu et al., 2023). Apabila pada
+data time series diduga dipengaruhi oleh vaiabel lain, maka model ARIMA dimodelkan dengan
+menambahkan variabel lain atau yang sering disebut dengan variabel eksogen. Pemodelan
+ARIMA dengan menambahkan variabel eksogen dikenal dengan metode ARIMAX
+(Autoregressive Integrated Moving Average with Exogeneus Variable) (Arianti et al., 2022).
+Data produksi padi merupakan data time series yang diduga hasil produktivitasnya
+dipengaruhi luas lahan tanam. Untuk menjawab permasalahan tersebut, penelitian ini dilakukan
+untuk membandingkan metode ARIMA dengan ARIMAX pada peramalan produksi padi pada
+masa mendatang. Hasil penelitian ini diharapkan dapat memberikan informasi bagi pemerintah
+sebagai bahan pertimbangan dalam pengambilan kebijakan pada pengembangan sektor
+pertanian.
+2. METODE
+Data yang diaplikasikan merupakan data sekunder terkait produksi padi di Kota
+Magelang yang dimulai dari bulan Januari 2019 sampai dengan Desember 2022. Data tahun
+2019 sampai tahun 2021 dikenakan sebagai data training dan data tahun 2022 dikenakan
+sebagai data testing. Kemudian untuk variabel eksogen pada metode ARIMAX adalah data luas
+lahan tanam (I. G. A. M. Lestari et al., 2021; Onibala et al., 2017).
+Sumber data penelitian ini diperoleh dari salah satu website resmi Kota Magelang
+DataGo (https://datago.magelangkota.go.id/) berupa data bulanan produksi padi dan luas lahan
+tanam di Kota Magelang. Data tersebut dianalisis menggunakan analisis time series model
+ARIMA dan ARIMAX yang dibandingkan untuk memperoleh metode pemodelan paling baik
+dalam memprediksi jumlah produksi padi di Kota Magelang. Metode yang dapat meramalkan
+berdasarkan pola data secara historis disebut sebagai metode Autoregressive Integrated Moving
+Average (ARIMA) (Rusyida & Pratama, 2020). Metode ini digunakan untuk memprediksi
+dalam jangka pendek dengan sangat baik, sedangkan untuk memprediksi jangka panjang
+metode ini memiliki ketepatan yang kurang baik (Elvani et al., 2016). ARIMA dapat digunakan
+pada data dalam keadaan stasioner baik rata-rata dan variansnya sama sepanjang waktu
+(Rusyida & Pratama, 2020).
+
+-- 3 of 14 --
+
+96 | Ihsan Fathoni Amri, Wulan Nur Ramadhan, Safira Ainurrofiah, M. Al Haris - Perbandingan ARIMA dan ARIMAX untuk ...
+   ( )(1 −  )      =   +    −    ( )  
+dengan
+   : Nilai pengamatan saat t
+   : Parameter autoregresif
+   : Parameter rataan bergerak
+  : Operator geser mundur
+  : differencing
+  : Parameter konstan
+   : Nilai sisaan (error)
+  : Derajat autoregressive (AR)
+  : Derajat moving average (MA)
+Sedangkan modifikasi model ARIMA yang ditambahkan variabel prediktor atau
+variabel eksogen disebut sebagai metode ARIMAX. Variabel tersebut berpengaruh signifikan
+pada data yang dilakukan sebagai penambah akurasi peramalan dalam penelitian. Berikut ini
+merupakan persamaan model ARIMAX(p,d,q) secara umun.
+   =    +       ,  +       ,  + ⋯ +      ,  +    ( )
+   ( )(1 −  )     
+dengan    ,  merupakan variabel eksigen ke-s pada saat t dan    ,   ,… ,   merupakan koefisien
+dari variabel eksogen.
+Kemudian setelah mendapatkan model terbaik ARIMA dan ARIMAX dilanjutkan
+dengan menentukan model yang paling baik dengan membandingkan kedua model tersebut.
+Sehingga model tersebut digunakan untuk meramalkan jumlah produksi padi di Kota
+Magelang. Perbandingan dapat dilakukan dengan melihat kriteria kebaikan model, yaitu dengan
+menggunakan rumus nilai MAPE sebagai berikut (Haris et al., 2024; Sofiyanti et al., 2024).
+     =
+∑  
+   −    
+    
+  × 100%
+dengan    merupakan nilai aktual pada waktu t,     adalah nilai prediksi pada waktu ke t dan n
+merupakan jumlah sampel yang digunakan.
+Penelitian ini dimulai dari statistik deskriptif, visualisasi data, pemodelan ARIMA,
+pemodelan ARIMAX, dan peramalan. Analisis data dalam metode ARIMA dan ARIMAX
+dilakukan dengan bantuan software R Studio. Langkah-langkah pemodelan ARIMA dan
+ARIMAX pada penelitian adalah sebagai berikut.
+1. Menganalisis statistik deskriptif pada data produksi padi di Kota Magelang.
+2. Menyajikan data produksi padi dan luas lahan tanam dalam bentuk plot data.
+3. Melakukan uji stasioneritas pada data produksi padi.
+4. Mengidentifikasi model ARIMA berdasarkan plot ACF dan PACF kemudian
+menentukan model terbaiknya dengan melihat nilai AIC dan BIC.
+
+-- 4 of 14 --
+
+Square : Jurnal Pendidikan Matematika dan Matematika, Volume 5, Nomor 2, 2023, pp. 93-105 | 97
+5. Estimasi parameter model ARIMA
+6. Diagnostic checking pada model ARIMA yaitu dengan asumsi white noise dan
+distribusi normal.
+7. Melakukan pemodelan pengaruh variabel eksogen menggunakan analisis regresi
+sederhana.
+8. Mengidentifikasi model ARIMAX menggunakan plot ACF dan PACF untuk
+mendapatkan model terbaiknya dengan melihat nilai AIC dan BIC yang terkecil
+9. Estimasi parameter model ARIMA
+10. Diagnostic checking pada model ARIMAX dengan asumsi uji white noise dan uji
+normalitas.
+11. Membandingkan model ARIMA dan ARIMAX dengan melihat nilai MAPE yang
+paling kecil.
+12. Melakukan peramalan jumlah produksi padi di Kota Magelang dengan model terbaik.
+3. HASIL DAN PEMBAHASAN
+3.1. Statistik Deskriptif
+Data produksi padi yang digunakan merupakan data bulanan dari tahun 2019 hingga
+tahun 2022. Data tersebut tersebut condong mengalami penurunan, hal ini dikarenakan lahan
+pertanian di Kota Magelang yang kemungkinan kecil, tetapi untuk komoditas padi masih
+sanggup menyediakan 10% hingga 11% sebagai kebutuhan konsumsi beras masyarakatnya
+sendiri. Statistik deskriptif dari jumlah produksi padi di Kota Magelang per bulan disajikan
+dalam tabel berikut:
+Tabel 1. Statistik Deskriptif Jumlah Produksi Padi tahun 2019-2022
+Bulan Rata-rata
+(bulanan dari 2019-2022) S. Dev Min Max
+Januari 187,4800 32,0656 161,28 228,00
+Februari 187,0350 49,3166 149,76 255,36
+Maret 188,0800 55,3858 145,92 264,00
+April 161,4800 27,8109 127,68 186,00
+Mei 156,0000 26,1285 121,60 176,32
+Juni 155,7075 40,5322 102,40 188,48
+Juli 173,5800 16,5622 153,60 187,20
+Agustus 151,5800 43,5994 103,36 188,48
+September 161,0000 35,7600 112,32 188,48
+Oktober 151,0400 51,7945 76,80 197,12
+November 153,2200 66,0633 54,72 193,44
+Desember 149,0800 51,4286 76,80 193,44
+Dari tabel statistik deskriptif di atas terlihat bahwa pada bulan Januari sampai
+Desember, rata-rata tertinggi jumlah produksi padi terjadi pada bulan Maret dengan rata-rata
+produksi padi 188,08 ton dan rata-rata jumlah produksi padi terendah terjadi di bulan Desember
+sebesar 149,08.
+3.2. Plot Data
+
+-- 5 of 14 --
+
+98 | Ihsan Fathoni Amri, Wulan Nur Ramadhan, Safira Ainurrofiah, M. Al Haris - Perbandingan ARIMA dan ARIMAX untuk ...
+Dalam menentukan asumsi data yang digunakan sudah dalam keadaan stasioner atau
+tidak dapat menggunakan plot times series. Jika data sudah dalam keadaan stasioner maka
+dilanjutkan identifikasi model, sedangkan apabila data ternyata belum stasioner maka perlu
+dilakukan differencing. Plot dari produksi padi dan luas lahan tanam di kota Magelang dari
+tahun 2019 hingga 2022 disajikan pada Gambar 1.
+Gambar 1. Plot Jumlah Produksi Padi dan Luas Lahan Tanam
+Terlihat pada Gambar 1 jumlah produksi padi mengalami penurunan pada setiap
+tahunnya. Sehingga data cenderung memiliki pola tren turun. Hal tersebut mengakibatkan data
+tidak stasioner terhadap ragam maupun rata-rata. Uji stasioneritas diperlukan untuk memastikan
+kedua hal tersebut.
+3.3. Uji Stasioner Data
+Kestasioneran data digunakan untuk memperkecil kekeliruan model atau error.
+Berdasarkan pada Gambar 1 pola yang dihasilkan dari plot tersebut menunjukkan bahwa data
+belum stasioner. Untuk membuktikan tingkat ke stasioneran data yang digunakan maka akan
+dilakukan uji Augmented Dickey-Fuller Test atau biasa disebut uji ADF. Berikut ini adalah hasil
+dari uji ADF:
+Tabel 2. Hasil Uji ADF
+Dickey-Fuller Lag Order p-value
+-1,8217 3 0,6453
+Dari hasil uji ADF didapatkan nilai p-value (0,6453) lebih besar dari tingkat
+signifikansi α (0,05), maka H0 diterima. Sehingga keputusannya adalah data tidak stasioner.
+Hal itu berarti data cenderung tidak stabil.
+Setelah mengetahui data tersebut belum stasioner maka dilakukan proses stasioneritas.
+Salah satu upaya yang dilakukan untuk menstationerkan data yaitu proses pembedaan
+(differencing). Berikut ini plot hasil dari proses differencing:
+
+-- 6 of 14 --
+
+Square : Jurnal Pendidikan Matematika dan Matematika, Volume 5, Nomor 2, 2023, pp. 93-105 | 99
+Gambar 2. Line Chart Hasil Differencing
+Dari Gambar 2 dapat diketahui bahwa data telah menyebar pada nilai tengah setelah
+dilakukan differencing satu kali dan diduga data telah stasioner. Untuk membuktikan
+kestasioneran data tersebut, dilakukan uji ADF kembali pada data hasil differencing sebanyak
+satu kali. Berikut disajikan tabel uji ADF setelah differencing:
+Tabel 3. Hasil Uji ADF Setelah Differencing
+Dickey-Fuller Lag Order p-value
+-5,3957 3 0,01
+Terlihat pada Tabel 3 nilai p-value (0,01) lebih kecil dari  (0,05), maka H0 ditolak.
+Sehingga keputusannya adalah data sudah stasioner (memiliki unit root). Hal itu berarti data
+sudah stabil dari waktu ke waktu.
+3.4. Identifiksi Model ARIMA
+Selanjutnya adalah mengidentifikasi model ARIMA jika data sudah dalam keadaan
+stasioner. Mengidentifikasi model ARIMA dapat dilakukan dengan melihat pola lag yang cutt
+off pada plot Autocorrelation Function (ACF) dan Partial Autocorrelation Function (PACF)
+yang disajikan pada gambar berikut ini:
+Gambar 3. Plot ACF dan PACF
+
+-- 7 of 14 --
+
+100 | Ihsan Fathoni Amri, Wulan Nur Ramadhan, Safira Ainurrofiah, M. Al Haris - Perbandingan ARIMA dan ARIMAX untuk ...
+Mengidentifikasi model plot ACF dan PACF dirumuskan sebagai ARIMA (p,d,q). Orde
+p ialah orde dari Autoregressive (AR) yang dilihat dari plot PACF, Orde d ialah banyaknya
+differencing, dan Orde q ialah orde dari Moving Average (MA) yang dilihat dari plot ACF.
+Gambar 3 terlihat plot ACF dan plot PACF cut off pada lag 1. Sehingga model sementara yang
+didapat dari satu kali differencing adalah ARIMA(0,1,0), ARIMA(0,1,1), ARIMA(1,1,0),
+ARIMA(1,1,1). Untuk memperoleh model terbaik ARIMA yaitu dengan mengamati nilai AIC
+dan BIC terkecil yang digunakan untuk memprediksi jumlah produksi padi. Pengidentifikasian
+model ARIMA dapat dilihat dari tabel berikut:
+Tabel 4. Identifikasi Model ARIMA
+Order AIC BIC
+ARIMA(0,1,0) 424,76 428,76
+ARIMA(0,1,1) 417,87 423,42
+ARIMA(1,1,0) 420,2 425,72
+ARIMA(1,1,1) 422,24 427,79
+Berdasarkan Tabel 4 dihasilkan model ARIMA (0,1,1) dengan nilai AIC dan BIC
+terkecil yaitu nilai AIC sebesar 417,87 dan BIC sebesar 423,42 yang dapat digunakan untuk
+memprediksi data bulanan jumlah produksi padi di Kota Magelang pada bulan Januari hingga
+Desember 2023.
+3.5. Estimasi Parameter ARIMA
+Setelah memperoleh model terbaik, maka dilakukan estimasi parameter dari model
+ARIMA terbaik yang disajikan dalam tabel berikut ini:
+Tabel 5. Estimasi Parameter dari Model ARIMA (0,1,1)
+Parameter Koefisien p-value
+MA (1) -0,50062 0,00053
+Konstanta -3,49865 0,01504
+Berdasarkan Tabel 5, dapat diperoleh persamaan model ARIMA seperti dibawah ini:
+(1 −  )   = ∅   + (1 −     )  
+   −      = ∅   +    −       
+   −      = −3,49865 +    +0,50062    
+   = −3,49865 +      +    +0,50062    
+   = −3,49865 +      +0,50062     +   
+3.6. Diagnostic Checking Model ARIMA
+Diagnostic checking dilakukan menggunakan pengujian Ljung-Box dengan tujuan untuk
+melihat apakah asumsi white noise pada model yang telah dipilih tersebut telah terpenuhi dan
+tidak terdapat autokorelasi. Berdasarkan output Ljung-Box (White Noise Residual) pada
+software, model ARIMA tersebut diperoleh hasil p-value bernilai 0,9609 yang beararti asumsi
+white noise pada model telah terpenuhi dikarenakan p-value (0,9609) lebih besar dari α(0,05).
+Sehingga dapat diketahui bahwa tidak ada autokorelasi dari residual tersebut. Pengujian
+selanjutnya adalah uji normalitas residual dengan memanfaatkan uji Kolmogorov Smirnov
+
+-- 8 of 14 --
+
+Square : Jurnal Pendidikan Matematika dan Matematika, Volume 5, Nomor 2, 2023, pp. 93-105 | 101
+dihasilkan nilai p-value 0,1978 lebih besar α(0,05), sehingga residual tersebut sudah
+berdistribusi normal.
+3.7. Pemodelan Pengaruh Variabel Eksogen dengan Analisis Regresi
+Langkah pertama penerapan metode ARIMAX adalah melalukan pemodelan regresi data
+produksi padi di Kota Magelang dengan data luas lahan untuk memastikan apakah variabel luas
+lahan sebagai calon variabel eksogen mempengaruhi jumlah produksi padi di Kota Magelang.
+Berikut ini merupakan hasil persamaan dari regresi linier sederhana.
+  = 39,7290 + 4.9867 
+Berdasarkan pada model regresi tersebut dihasilkan nilai p-value 0,001, yang
+mendefinisikan bahwa variabel luas lahan tanam berpengaruh secara signifikan terhadap
+jumlah produksi padi karena nilai p-value lebih kecil dari taraf signifikansi 5%.
+3.8. Identifikasi Model ARIMAX
+Sebelum mengidentifikasi model dilakukan pengecekan stasioner terhadap rata-rata
+dengan uji ADF. Hasil dari pengujian ADF tersebut menunjukkan bahwa p-value bernilai 0,02
+yang berarti data tersebut sudah dalam keadaan stasioner maka dari itu tidak memerlukan
+differencing. Kemudian untuk pemilihan model digunakan plot ACF dan PACF sebagi berikut:
+Gambar 4. Plot ACF dan PACF residual
+Berdasarkan Gambar 4 terlihat bahwa terjadi cut off pada plot ACF di lag setelah 1,
+sedangkan untuk plot PACF terjadi cut off setelah lag 2. Hal itu dapat membentuk model
+sementaranya yaitu ARIMAX(1,0,0), ARIMAX(0,0,1), ARIMAX(1,0,1), ARIMAX(2,0,0),
+dan ARIMAX(2,0,1). Untuk menghasilkan model terbaik ARIMAX yang digunakan untuk
+memprediksi jumlah produksi padi terhadap luas lahan tanam dengan mengamati nilai AIC dan
+BIC yang paling kecil pada tabel dibawah ini:
+Tabel 6. Identifikasi Model ARIMAX
+Order AIC BIC
+ARIMAX(1,0,0) 310,93 317,27
+ARIMAX(0,0,1) 309,15 315,48
+ARIMAX(1,0,1) 309,98 317,90
+ARIMAX(2,0,0) 309,59 317,51
+ARIMAX(2,0,1) 310,70 320,20
+
+-- 9 of 14 --
+
+102 | Ihsan Fathoni Amri, Wulan Nur Ramadhan, Safira Ainurrofiah, M. Al Haris - Perbandingan ARIMA dan ARIMAX untuk ...
+Tabel 6 menunjukkan bahwa model terbaik ARIMAX yaitu (0,0,1) atau orde p = 0, d =
+0, dan q = 1 dengan hasil AIC dan BIC terkecil yaitu sebesar 309,15 dan 315,48 yang nantinya
+digunakan untuk memprediksi besaran produksi padi di Kota Magelang dengan variabel
+eksogen luas lahan tanam.
+3.9. Estimasi Parameter ARIMAX
+Setelah didapatkan model terbaik dari ARIMAX dengan menggunakan satu variabel
+eksogen yaitu ARIMAX(0,0,1) yang secara matematis dinyatakan sebagai berikut:
+   = 6.06954 +      + 0.79761  ,  +0,50062     +   
+3.10. Diagnostic Checking Model ARIMAX (3.10 miring)
+Setelah didapatkan model terbaik, perlu melakukan uji residual untuk melihat apakah
+terdapat autokorelasi atau tidak (white noise) dan megetahui apakah data tersebut berdistribusi
+normal atau tidak. Untuk asumsi white noise menggunakan uji Ljung-Box, sedangkan distribusi
+normal dilakukan menggunakan uji Kolmogorov-Smirnov. Pada uji Ljung-Box didapatkan nilai
+p-value sebesar 0,9711 dimana p-value lebih besar dari α (0,05) sehingga model tersebut tidak
+terdapat autokorelasi dari residual atau sudah dikatakan memenuhi asumsi white noise.
+Sedangkan pada Uji Kolmogorov- Smirnov nilai p-value didapat sebesar 0,7578 dengan
+demikian model berdisribusi normal karena p-value lebih besar dari α(0.05).
+3.11. Perbandingan Model ARIMA dan ARIMAX
+Dalam menentukan model mana yang paling baik untuk meramalkan jumlah produksi
+padi di Kota Magelang perlu dilakukan perbandingan antara model terbaik yang didapat pada
+ARIMA dengan model terbaik ARIMAX.. Perbandingan model tersebut dapat dilakukan
+dengan mengamati kriteria kebaikan model, yaitu dengan nilai MAPE yang disajikan pada tabel
+berikut ini:
+Tabel 7. Perbandingan model ARIMA dan ARIMAX
+Model MAPE
+ARIMA (0,1,1) 9,9986
+ARIMAX (0,0,1) 6,3114
+Berdasarkan Tabel 7 terlihat bahwa nilai MAPE yang didapat pada model ARIMAX lebih
+kecil dari pada model yang didapat pada ARIMA. Sehingga dapat di simpulkan bahwa model
+yang lebih baik digunakan untuk meramalkan jumlah produksi padi di Kota Magelang ialah
+model ARIMAX (0,0,1) diikuti variabel eksogen Luas Lahan Tanam.
+3.12. Peramalan dengan Metode ARIMAX
+Model ARIMAX (0,0,1) digunakan untuk memprediksi atau meramalkan jumlah
+produksi padi di Kota Magelang sampai beberapa tahun yang akan datang. Berikut ini
+merupakan grafik peramalan (forcasting) jumlah produksi padi di Kota Magelang dengan luas
+lahan tanam sebagai variabel eksogen.
+
+-- 10 of 14 --
+
+Square : Jurnal Pendidikan Matematika dan Matematika, Volume 5, Nomor 2, 2023, pp. 93-105 | 103
+Gambar 5. Grafik Prediksi Produksi Padi di Kota Magelang
+Garis berwarna biru pada Gambar 5 merupakan hasil prediksi atau peramalan jumlah
+produksi padi di Kota Magelang. Grafik tersebut mengalami pola trend turun karena lahan
+pertanian yang semakin sempit setiap tahunnya sehingga jumlah produksinya menurun.
+Kemudian hasil dari prediksi disajikan dalam tabel sebagai berikut:
+Tabel 6. Prediksi Produksi Padi di Kota Magelang tahun 2023
+Bulan Prediksi Produksi Padi
+(ton)
+Januari 224,0557
+Februari 211,9166
+Maret 224,0557
+April 217.9861
+Mei 224.0557
+Juni 217.9861
+Juli 217.9861
+Agustus 224.0557
+September 217.9861
+Oktober 199.7775
+November 193.7079
+Desember 175.4993
+4. SIMPULAN
+Berdasarkan hasil perbandingan dan prediksi data jumlah produksi padi di kota Magelang
+tahun 2019-2022 dengan Metode ARIMA dan ARIMAX dapat disimpulkan bahwa hasil
+peramalan jumlah produksi padi di Kota Magelang pada tahun 2019 - 2022 didapat model
+terbaik ARIMA adalah ARIMA (0,1,1) sedangkan pada ARIMAX model terbaiknya adalah
+ARIMAX (0,0,1). Dari kedua model tersebut ternyata nilai MAPE pada model ARIMAX lebih
+kecil dari pada ARIMA yaitu 9,9986 dan 6,3114. Sehingga model tersebut baik untuk dijadikan
+
+-- 11 of 14 --
+
+104 | Ihsan Fathoni Amri, Wulan Nur Ramadhan, Safira Ainurrofiah, M. Al Haris - Perbandingan ARIMA dan ARIMAX untuk ...
+masukkan kepada pemerintah dalam memprediksi jumlah produksi padi di kota Magelang di
+masa depan dengan luas tanam sebagai variabel eksogen.
+5. DAFTAR PUSTAKA
+Adu, W. K., Appiahene, P., & Afrifa, S. (2023). VAR , ARIMAX and ARIMA Models for
+Nowcasting Unemployment Rate in Ghana Using Google Trends. Journal of Electrical
+Systems and Information Technology, 1–16. https://doi.org/10.1186/s43067-023-00078-
+1
+Amri, I. F., Sari, W., Widyasari, V. A., Nurohmah, N., & Haris, M. Al. (2024). The ARIMA-
+GARCH Method in Case Study Forecasting the Daily Stock Price Index of PT. Jasa
+Marga (Persero). Eigen Mathematics Journal, 7(1), 25–33.
+https://doi.org/10.29303/emj.v7i1.174
+Arianti, R., Sahriman, S., & Talangko, L. P. (2022). Model ARIMA dengan Variabel Eksogen
+dan GARCH pada Data Kurs Rupiah. Journal of Statistics and Its Application, 3(1), 41–
+48. https://doi.org/10.20956/ejsa.vi.11603
+Choiriyah, E., Syafitri, U. D., & Sumertajaya, I. M. (2020). Pengembangan Model Peramalan
+Space Time Studi Kasus: Data Produksi Padi di Sulawesi Selatan. Indonesian Journal of
+Statistics and Its Applications, 4(4), 579–589.
+https://doi.org/https://doi.org/10.29244/ijsa.v4i4.584
+Elvani, S. P., Utary, A. R., & Yudaruddin, R. (2016). Peramalan Jumlah Produksi Tanaman
+Kelapa Sawit dengan Menggunakan Metode ARIMA(Autoregressive Integrated Moving
+Average). Jurnal Manajemen, 8(1), 95–112.
+Hadiansyah, F. . (2017). Prediksi Harga Cabai dengan Menggunakan pemodelan Time Series
+ARIMA. Indonesian Journal on Computing (Indo-JC), 2(1), 71.
+https://doi.org/10.21108/indojc.2017.2.1.144
+Haris, M. Al, Setyaningsih, L. I., Fauzi, F., & Amri, S. (2024). Projection of PT Aneka
+Tambang Tbk Share Risk Value Based on Backpropagation Artificial Neural Network
+Forecasting Result. JTAM (Jurnal Teori Dan Aplikasi Matematika), 8(2), 578.
+https://doi.org/10.31764/jtam.v8i2.20267
+Hidayat, S., & Hakim, N. (2021). Peramalan Ekspor Luar Negeri Banten Menggunakan Model
+ARIMAX. Jurnal Ilmiah Pendidikan Matematika, Matematika Dan Statistika, 2(2), 204–
+2013. https://doi.org/https://doi.org/10.46306/lb.v2i2.75
+Hilalullaily, R., Kusnadi, N., & Rachmina, D. (2021). Analisis Efisiensi Usahatani Padi di Jawa
+dan Luar Jawa, Kajian Prospek Peningkatan Produksi Padi Nasional. Jurnal Agribisnis
+Indonesia (Journal of Indonesian Agribusiness), 9(2), 143–153.
+Kalsum, U., Sabat, E., & Imadudin, P. (2020). Analisis Hasil Rendemen Giling dan Kualitas
+Beras pada Penggilingan Padi Kecil Keliling. Jurnal Ilmu-Ilmu Pertanian, 2(2), 125–130.
+Kumila, A., Sholihah, B., Evizia, E., Safitri, N., & Fitri, S. (2019). Perbandingan Metode
+Moving Average dan Metode Naïve dalam Peramalan Data Kemiskinan. JTAM | Jurnal
+Teori Dan Aplikasi Matematika, 3(1), 65. https://doi.org/10.31764/jtam.v3i1.764
+Lestari, G. A. M., Sumarjaya, I. W., & Widana, I. N. (2021). Peramalan Produksi Padi di
+Kabupaten Bandung, Gianyar, dan Tabanan dengan Metode Vector Autoregression
+(VAR). E-Jurnal Matematika, 10(1), 32–40.
+
+-- 12 of 14 --
+
+Square : Jurnal Pendidikan Matematika dan Matematika, Volume 5, Nomor 2, 2023, pp. 93-105 | 105
+Lestari, I. G. A. M., Sumarjaya, I. W., & Widana, I. N. (2021). Peramalan Produksi Padi Di
+Kabupaten Badung, Gianyar, Dan Tabanan Dengan Metode Vector Autoregression (Var).
+E-Jurnal Matematika, 10(1), 32. https://doi.org/10.24843/mtk.2021.v10.i01.p317
+Li, G., & Wang, Y. (2013). Automatic ARIMA Modeling-Based Data Aggregation Scheme in
+Wireless Sensor Networks. EURASIP Journal on Wireless Communications and
+Networking, 85(2013), 1–13. https://doi.org/https://doi.org/10.1186/1687-1499-2013-85
+Mafor, K. I. (2015). Analisis Faktor Produksi Padi Sawah di Desa Tompasobaru Dua
+Kecamatan Tompasobaru.
+Onibala, A. G., Sondakh, M. L., Sondakh, M. L., & Mandei, J. (2017). Analisis Faktor-Faktor
+yang Mempengaruhi Produksi Padi Sawah di Kelurahan Koya, Kecamatan Tondano
+Selatan. Agri-SosioEkonomiUnsrat, 13(2A), 237–242.
+https://doi.org/https://doi.org/10.35791/agrsosek.13.2A.2017.17015
+Pamularsih, L., Mustafid, M., & Hoyyi, A. (2021). Penerapan Seasonal Generalized Space
+Time Autoregressive Seemingly Unrelated Regression (SGSTAR SUR) pada Peramalan
+Hasil Produksi Padi. Jurnal Gaussian, 10(2), 241–249.
+https://doi.org/10.14710/j.gauss.v10i2.29435
+Pradana, M. S., Rahmalia, D., Dwi, E., & Prahastini, A. (2020). Peramalan Nilai Tukar Petani
+Kabupaten Lamongan dengan ARIMA. Jurnal Matematika, 10(2), 91–104.
+https://doi.org/10.24843/JMAT.2020.v10.i02.p126
+Riestiansyah, F., Damayanti, D., Reswara, M., & Susetyoko, R. (2022). Perbandingan metode
+ARIMA dan ARIMAX dalam Memprediksi Jumlah Wisatawan Nusantara di Pulau Bali.
+Jurnal Infomedia: Teknik Informatika, Multimedia & Jaringan, 7(2), 58–62.
+https://doi.org/http://dx.doi.org/10.30811/jim.v7i2.3336
+Rusyida, W. Y., & Pratama, V. Y. (2020). Prediksi Harga Saham Garuda Indonesia di Tengah
+Pandemi Covid-19. SQUARE : Journal of Mathematics and Mathematics Education,
+2(1), 73–81. https://doi.org/10.21580/square.2020.2.1.5626
+Sofiyanti, E. N., Ulinuha, S., Okiyanto, R., Haris, M. Al, & Wasono, R. (2024). Peramalan
+Harga Emas Menggunakan Metode Fuzzy Time Series Chen dalam Investasi untuk
+Meminimalisir Risko. 7(1), 55–66.
+Suryani, A. R., Hendikawati, P., Februari, B., Maret, B., Suryani, A. R., Peramalan, H. P., &
+Hujan, C. (2018). Peramalan Curah Hujan dengan Metode Autoregressive Integrated
+Moving Average with Exogenous (ARIMAX). UNNES Journal of Mathematics, 7(1),
+120–129.
+Wijaya, D. Y., Furqon, M. T., & Marji. (2022). Peramalan Jumlah Produksi Padi menggunakan
+Metode Backpropagation. Jurnal Pengembangan Teknologi Informasi Dan Ilmu
+Komputer, 6(3), 1129–1137. https://j-ptiik.ub.ac.id/index.php/j-
+ptiik/article/view/10713/4743
+
+-- 13 of 14 --
+
+106 | Ihsan Fathoni Amri, Wulan Nur Ramadhan, Safira Ainurrofiah, M. Al Haris - Perbandingan ARIMA dan ARIMAX untuk ...
+- left blank page -
+
+-- 14 of 14 --
