@@ -33,7 +33,7 @@ async function audit(params: {
        VALUES (?, ?, ?, ?, ?)`,
       [params.user_id, params.action, params.entity ?? null, params.entity_id ?? null, params.ip_addr ?? null]
     );
-  } catch {}
+  } catch { }
 }
 
 async function getActiveParams() {

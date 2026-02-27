@@ -305,6 +305,86 @@ router.get("/results", auth, requireRole("dosen"), async (req: AuthedRequest, re
 });
 
 /**
+ * GET /api/verification/my-inbox
+ * Mahasiswa: melihat daftar hasil verifikasi dari dosen untuk laporan miliknya sendiri.
+ *
+ * query:
+ * - limit, offset (pagination)
+ * - status: wajar|perlu_revisi|plagiarisme (optional filter)
+ */
+router.get("/my-inbox", auth, requireRole("mahasiswa"), async (req: AuthedRequest, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit ?? 50), 200);
+    const offset = Math.max(Number(req.query.offset ?? 0), 0);
+    const statusFilter = req.query.status ? normalizeStatus(req.query.status) : null;
+
+    const where: string[] = ["cr.requested_by = ?"];
+    const params: any[] = [req.user!.id];
+
+    if (statusFilter) {
+      where.push("vn.status = ?");
+      params.push(statusFilter);
+    }
+
+    const whereSql = `WHERE ${where.join(" AND ")}`;
+
+    const [rows] = await db.query<any[]>(
+      `
+      SELECT
+        cr2.id_result,
+        cr2.similarity,
+        cr2.created_at AS result_created_at,
+
+        cr.id_check,
+        cr.doc_id,
+        ud.title AS doc_title,
+        cr.finished_at,
+
+        vn.id_note,
+        vn.status AS verification_status,
+        vn.note_text,
+        vn.created_at AS note_created_at,
+
+        d.nama AS verifier_name,
+        d.nidn AS verifier_nidn,
+        u_dosen.email AS verifier_email
+      FROM check_request cr
+      JOIN check_result cr2 ON cr2.check_id = cr.id_check
+      JOIN user_document ud ON ud.id_doc = cr.doc_id
+      JOIN verification_note vn ON vn.result_id = cr2.id_result
+      JOIN dosen d ON d.id_dosen = vn.verifier_id
+      JOIN users u_dosen ON u_dosen.id = d.user_id
+      ${whereSql}
+      ORDER BY vn.created_at DESC
+      LIMIT ? OFFSET ?
+      `,
+      [...params, limit, offset]
+    );
+
+    const [countRows] = await db.query<any[]>(
+      `
+      SELECT COUNT(*) AS total
+      FROM check_request cr
+      JOIN check_result cr2 ON cr2.check_id = cr.id_check
+      JOIN verification_note vn ON vn.result_id = cr2.id_result
+      ${whereSql}
+      `,
+      params
+    );
+
+    return res.json({
+      ok: true,
+      total: countRows?.[0]?.total ?? 0,
+      limit,
+      offset,
+      rows,
+    });
+  } catch (e: any) {
+    return res.status(500).json({ ok: false, message: e?.message ?? "Server error" });
+  }
+});
+
+/**
  * GET /api/verification/:resultId
  * lihat note untuk result tertentu
  */

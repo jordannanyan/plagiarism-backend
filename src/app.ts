@@ -9,6 +9,7 @@ import corpusRoutes from "./routes/corpus.routes";
 import documentsRoutes from "./routes/documents.routes";
 import checksRoutes from "./routes/checks.routes";
 import verificationRoutes from "./routes/verification.routes";
+import adminAuditRoutes from "./routes/admin.audit.routes";
 
 
 const app = express();
@@ -37,5 +38,6 @@ app.use("/api/corpus", corpusRoutes);
 app.use("/api/documents", documentsRoutes);
 app.use("/api/checks", checksRoutes);
 app.use("/api/verification", verificationRoutes);
+app.use("/api/admin/audit", adminAuditRoutes);
 
 export default app;

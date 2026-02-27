@@ -216,12 +216,18 @@ router.post("/", auth, requireRole("admin"), async (req: AuthedRequest, res) => 
  *    mahasiswa?: { nim?, prodi?, angkatan? }
  *  }
  */
-router.patch("/:id", auth, requireRole("admin"), async (req: AuthedRequest, res) => {
+router.patch("/:id", auth, requireRole("admin", "dosen", "mahasiswa"), async (req: AuthedRequest, res) => {
   const ip = getClientIp(req);
+  const isAdmin = req.user!.role === "admin";
 
   const userId = Number(req.params.id);
   if (!Number.isFinite(userId) || userId <= 0) {
     return res.status(400).json({ ok: false, message: "Invalid user id" });
+  }
+
+  // dosen/mahasiswa can only edit their own account
+  if (!isAdmin && req.user!.id !== userId) {
+    return res.status(403).json({ ok: false, message: "Forbidden: you can only edit your own account" });
   }
 
   const body = req.body as any;
@@ -263,7 +269,8 @@ router.patch("/:id", auth, requireRole("admin"), async (req: AuthedRequest, res)
       sets.push("email = ?");
       params.push(body.email);
     }
-    if (body.is_active !== undefined) {
+    if (body.is_active !== undefined && isAdmin) {
+      // only admin can change is_active
       const v = body.is_active === true || body.is_active === 1 || body.is_active === "1" ? 1 : 0;
       sets.push("is_active = ?");
       params.push(v);
@@ -307,7 +314,7 @@ router.patch("/:id", auth, requireRole("admin"), async (req: AuthedRequest, res)
 
     await audit({
       user_id: req.user!.id,
-      action: "ADMIN_UPDATE_USER",
+      action: isAdmin ? "ADMIN_UPDATE_USER" : "USER_UPDATE_SELF",
       entity: "users",
       entity_id: userId,
       ip_addr: ip,
