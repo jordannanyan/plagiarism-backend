@@ -1,0 +1,169 @@
+Rancang Bangun Website Majelis Jemaat GKE Bumi Palangka (MJBP) PHP dan MySQL,
+
+Lany Aprilia Permatasari 1), Enny Dwi Oktaviyani2*), Sherly Christina3)
+
+1) Teknik Informatika, Fakultas Teknik, Universitas Palangka Raya
+
+Kampus Tunjung Nyaho Jalan Yos Sudarso, Palangka Raya, Kalimantan Tengah, Indonesia
+
+*corresponding author
+
+1) lanyapr@gmail.com
+
+2) enny.obrien@gmail.com
+
+3) sherly.christina.upr@gmail.com
+
+Abstrak
+
+Majelis Jemaat GKE Bumi Palangka merupakan pimpinan jemaat gereja yang berada di Kota Palangka Raya dan menaungi empat gereja, sehingga memiliki jumlah jemaat yang cukup besar. Salah satu tugas utama Badan Pekerja Harian Majelis Jemaat GKE Bumi Palangka (BPH MJBP) adalah mengatur penatalayanan gereja serta melakukan pendataan jemaat setiap tahun. Permasalahan yang dihadapi oleh Majelis Jemaat GKE Bumi Palangka adalah sistem pelayanan jemaat dan pengelolaan data yang masih belum terkomputerisasi dan terintegrasi dengan baik, serta masih terbatasnya media yang dapat digunakan untuk membagikan atau menyebarkan informasi kepada jemaat.
+
+Dalam perancangan Website Majelis Jemaat GKE Bumi Palangka digunakan metode Waterfall yang terdiri dari beberapa tahapan, yaitu Requirements Definition, System and Software Design, Implementation and Unit Testing, Integration and System Testing, serta Operation and Maintenance. Adapun perangkat lunak yang digunakan dalam pengembangan website ini antara lain Visual Studio Code, MySQL, dan XAMPP.
+
+Website yang dikembangkan telah melalui tahap pengujian menggunakan metode black box testing, yang menunjukkan bahwa seluruh fitur pada website dapat berjalan dengan baik. Rancang bangun website MJBP ini bertujuan untuk membantu proses perencanaan, pengawasan, pengarahan, serta pendelegasian tugas kepada seluruh departemen pelayanan yang saling berkoordinasi. Selain itu, sistem ini juga memungkinkan pengelolaan data gereja dan data jemaat secara terkomputerisasi sehingga dapat menghasilkan informasi jemaat secara lebih efektif, seperti laporan rekapitulasi data jemaat.
+
+Kata kunci: Majelis Jemaat GKE Bumi Palangka, Waterfall, Gereja, Website
+
+Abstract
+
+The GKE Bumi Palangka Congregational Council serves as the leadership body of the church congregation in Palangka Raya, overseeing four churches and managing a large number of members. One of the main responsibilities of the Daily Working Body of the GKE Bumi Palangka Congregational Council (BPH MJBP) is to organize church stewardship and conduct annual data collection of congregation members. However, several issues are faced by the council, including a congregation service system and data management process that have not yet been computerized or integrated. In addition, there is still a lack of media or platforms to effectively share and disseminate information within the GKE Bumi Palangka Congregational Council.
+
+In developing the website for the GKE Bumi Palangka Congregational Council, the Waterfall method is applied, which consists of several stages: Requirements Definition, System and Software Design, Implementation and Unit Testing, Integration and System Testing, and Operation and Maintenance. The software tools used in the development of this website include Visual Studio Code, MySQL, and XAMPP.
+
+The website has been evaluated using black-box testing, and the results show that the features implemented in the system function properly. The development of the MJBP website aims to support planning, supervision, direction, and task delegation across all service departments that are interconnected or coordinated. Furthermore, the system enables computerized management of church and congregation data, which helps generate useful information such as congregation recapitulation reports.
+
+Received: 28/06/2021 Accepted: 29/06/2021
+
+68
+
+Keywords: GKE Bumi Palangka Congregation Council, Waterfall, Church, Website
+
+PENDAHULUAN
+
+Majelis Jemaat GKE Bumi Palangka merupakan pimpinan jemaat gereja yang berada di Kota Palangka Raya dan membawahi empat gereja, yaitu Gereja Betesda, Gereja Kalawa, Gereja Hapakat, dan Gereja Grafirat. Salah satu tugas utama Badan Pekerja Harian Majelis Jemaat GKE Bumi Palangka (BPH MJBP) adalah mengelola penatalayanan gereja serta melakukan pendataan jemaat setiap tahun pada keempat gereja tersebut. Berdasarkan data dari MJBP, jumlah jemaat yang berada di bawah naungan MJBP diperkirakan mencapai sekitar 740 kepala keluarga dengan total kurang lebih 3000 jiwa [5].
+
+Permasalahan yang dihadapi oleh MJBP saat ini adalah sistem pelayanan jemaat dan pengelolaan data yang masih belum terkomputerisasi maupun terintegrasi dengan baik. Selain itu, media untuk menyebarkan atau membagikan informasi kepada jemaat juga masih terbatas. Informasi mengenai kegiatan jemaat biasanya hanya disampaikan ketika kebaktian berlangsung, khususnya pada hari Minggu. Hal ini menyebabkan jemaat yang tidak dapat menghadiri ibadah Minggu kesulitan memperoleh informasi terkait kegiatan yang telah dilaksanakan maupun kegiatan yang akan dilaksanakan pada minggu berikutnya, seperti jadwal ibadah, laporan keuangan, pengumuman pendaftaran katekisasi, dan berbagai informasi lainnya. Oleh karena itu, diperlukan suatu sistem informasi layanan jemaat yang dapat diterapkan di MJBP guna mendukung penyampaian informasi secara lebih efektif.
+
+Beberapa penelitian sebelumnya telah membahas mengenai pengembangan sistem informasi gereja. Salah satunya adalah penelitian berjudul Perancangan Sistem Informasi Manajemen Pelayanan Anggota Jemaat, Baptisan, dan Pernikahan Berbasis Web (Studi Kasus: GEKARI Lembah Pujian Kota Sorong) [9], yang berfokus pada pengembangan sistem informasi untuk satu gereja. Sistem tersebut dirancang sebagai media penyampaian informasi kepada warga gereja dengan dua aktor utama, yaitu admin dan pengunjung.
+
+Penelitian lainnya adalah Perancangan Implementasi Sistem Informasi Data Jemaat Berbasis Web pada GKJ Mergangsan Yogyakarta [4], yang juga berfokus pada satu gereja. Sistem informasi tersebut dikembangkan untuk mengelola data jemaat di GKJ Mergangsan Yogyakarta dengan memanfaatkan teknologi PHP dan MySQL.
+
+Selain itu, terdapat penelitian Rancang Bangun Sistem Informasi Gereja GKE Samaria Palangka Raya Berbasis Web [6] yang bertujuan menyediakan informasi terkait Gereja Samaria Palangka Raya. Sistem ini melibatkan tiga aktor utama, yaitu pengunjung, admin, dan member.
+
+Berdasarkan beberapa penelitian yang telah dilakukan sebelumnya, dapat diketahui bahwa sebagian besar penelitian hanya berfokus pada perancangan dan pembangunan sistem informasi untuk satu gereja saja. Oleh karena itu, pengembangan Website MJBP diharapkan dapat menjadi sarana yang memfasilitasi Majelis Jemaat GKE Bumi Palangka dalam menyampaikan informasi gereja kepada jemaat yang berada di Gereja Betesda, Gereja Kalawa, Gereja Hapakat, dan Gereja Grafirat, sekaligus mendukung pengelolaan data gereja secara terkomputerisasi dan terintegrasi.
+
+2. TINJAUAN PUSTAKA
+
+2.1 Majelis Jemaat GKE Bumi Palangka
+
+Gereja Kalimantan Evangelis (GKE) merupakan persekutuan jemaat-jemaat yang berada di Pulau Kalimantan sebagai kelanjutan dari Gereja Dajak Evangelis yang didirikan pada tanggal 4 April 1935 dan berdiri untuk jangka waktu yang tidak ditentukan. Struktur organisasi GKE terdiri atas Jemaat, Resort, dan Sinode, yang masing-masing memiliki ketentuan serta tata kelola yang diatur dalam peraturan tersendiri.
+
+Majelis Jemaat GKE Bumi Palangka merupakan pimpinan jemaat gereja yang berada di Kota Palangka Raya dan membawahi empat gereja, yaitu Gereja Betesda, Gereja Kalawa, Gereja Hapakat, dan Gereja Grafirat. Dengan jumlah gereja yang berada di bawah naungannya, MJBP memiliki jumlah jemaat yang cukup besar. Salah satu tugas utama Badan Pekerja Harian Majelis Jemaat GKE Bumi Palangka (BPH MJBP) adalah mengatur penatalayanan gereja serta melakukan pendataan jemaat setiap tahun pada keempat gereja tersebut. Berdasarkan data dari MJBP, jumlah jemaat yang berada di bawah koordinasi MJBP diperkirakan mencapai sekitar 740 kepala keluarga dengan total sekitar 3000 jiwa [4].
+
+Dalam kegiatan operasional sehari-hari, Majelis dipimpin oleh Badan Pekerja Harian (BPH) yang terdiri dari Ketua Umum beserta beberapa Ketua, Sekretaris Umum beserta beberapa Sekretaris, Bendahara Umum beserta beberapa Bendahara, serta para Ketua Departemen dan Ketua Biro. BPH MJBP memiliki tanggung jawab dalam mengelola berbagai aspek pelayanan gereja, termasuk pengelolaan keuangan, data jemaat, serta pelayanan yang dilaksanakan oleh MJBP.
+
+2.2 Pengertian Website
+
+Menurut Bekti B. H., website atau situs web dapat diartikan sebagai kumpulan halaman yang menyajikan berbagai informasi, seperti teks, gambar statis maupun bergerak, animasi, suara, video, atau kombinasi dari berbagai elemen tersebut. Informasi tersebut dapat bersifat statis maupun dinamis dan saling terhubung melalui jaringan halaman yang disebut hyperlink [1]. Secara umum, website dapat diklasifikasikan menjadi tiga jenis utama, yaitu website statis, website dinamis, dan website interaktif.
+
+2.3 Pengertian Sistem Informasi
+
+Menurut Colin Cherry, sistem merupakan suatu kesatuan yang terbentuk dari berbagai komponen yang memiliki karakteristik yang berbeda namun saling berkaitan [2]. Sementara itu, menurut Turban et al. [10], informasi adalah data yang telah diolah dan diorganisasikan sehingga memiliki makna serta memberikan nilai bagi pihak yang menerimanya.
+
+2.4 Perancangan Sistem
+
+Menurut Fany Andalia dan E. B. Setiawan, perancangan sistem merupakan tahap dalam proses pengembangan sistem yang dilakukan setelah proses analisis sistem. Pada tahap ini dilakukan pendefinisian kebutuhan fungsional serta penggambaran sistem yang akan dikembangkan. Dalam proses perancangan sistem, pemodelan dapat dilakukan menggunakan pendekatan terstruktur melalui berbagai bentuk grafik atau diagram untuk mempermudah pemahaman sistem yang akan dibangun [3].
+
+3. METODE PENELITIAN
+
+Metodologi penelitian yang digunakan dalam penelitian ini terbagi menjadi dua bagian utama, yaitu metode pelaksanaan dan metode pengembangan perangkat lunak.
+
+3.1 Metode Pelaksanaan
+
+Metode yang digunakan dalam proses perancangan dan pembangunan Website Majelis Jemaat GKE Bumi Palangka adalah sebagai berikut:
+
+a. Metode Pengumpulan Data
+
+Tahap ini dilakukan untuk memperoleh data yang berkaitan dengan permasalahan penelitian. Teknik yang digunakan adalah observasi, yaitu melakukan pengamatan secara langsung terhadap aktivitas dan kondisi di Majelis Jemaat GKE Bumi Palangka.
+
+b. Metode Studi Kepustakaan
+
+Metode ini dilakukan dengan mempelajari berbagai sumber informasi, seperti literatur dan referensi dari internet yang berkaitan dengan pengembangan website sistem informasi. Selain itu, dilakukan juga proses pemilihan fitur yang sesuai untuk diterapkan dalam website yang akan dibangun.
+
+c. Metode Konsultasi
+
+Metode konsultasi dilakukan melalui proses diskusi, tanya jawab, serta bimbingan dengan dosen pembimbing. Tujuan dari metode ini adalah untuk memperoleh arahan serta masukan terkait pengembangan website yang sedang dirancang.
+
+d. Metode Implementasi
+
+Pada tahap ini dilakukan proses pembangunan website dengan memanfaatkan data yang telah dikumpulkan sebelumnya. Data tersebut kemudian diolah dan diterapkan dalam proses pengembangan sistem sesuai dengan perancangan yang telah dibuat.
+
+3.2 Metode Pengembangan Perangkat Lunak
+
+Metode pengembangan perangkat lunak yang digunakan dalam penelitian ini adalah metode Waterfall. Metode ini pertama kali diperkenalkan oleh Winston Royce pada tahun 1970. Metode Waterfall dipilih karena memiliki alur pengembangan yang terstruktur dan sistematis, sehingga setiap tahap perancangan dan implementasi dapat dilakukan secara lebih terarah dan menghasilkan sistem dengan kualitas yang baik [8].
+
+Dibawah ini pada Gambar 1 merupakan 
+
+Gambar 1. Waterfall Model [8]
+
+Dimana pada metodologi waterfall ini terdapat beberapa tahapan yaitu :
+
+Requirements Definition (Definisi Kebutuhan)
+
+System dan Software Design (Desain Sistem dan Software)
+
+Implementation and Unit Testing (Implementasi dan pengujian unit)
+
+Integration and System Testing (Integrasi dan Pengujian Sistem)
+
+Operation and Maintenance (Operasi dan Pemeliharaan)
+
+PEMBAHASAN
+
+Perancangan Sistem
+
+Diagram Konteks
+
+Di bawah ini pada Gambar 2 merupakan diagram konteks:
+
+Gambar 2. Diagram Konteks
+
+Data Flow Diagram
+
+Dibawah ini pada Gambar 3 merupakan Data Flow Diagram :
+
+Gambar 3. Data Flow Diagram
+
+Entity Relationship Diagram
+
+Di bawah ini pada Gambar 4 merupakan Entity Relationship Diagram :
+
+KESIMPULAN
+
+Dari Skripsi yang telah dibuat dengan judul “Website Majelis Jemaat GKE Bumi Palangka” dapat disimpulkan bahwa :
+
+Dalam merancang dan membangun website ini menggunakan metodologi pengembangan perangkat lunak Waterfall Menurut Summerville tahun 2011, yang memiliki tahapan yaitu requirements definition yang dilakukan dalam pembuatan perancangan bisnis proses dan flowchart. System and software design dilakukan dalam pembuatan Data Flow Diagram (DFD) dan Entity Relationship Diagram (ERD), dan desain interface. Implementation and unit system dengan bahasa pemrograman yang digunakan yaitu HTML, PHP, CSS, Bootstrap, Javascript dan MySQL dan. Integration and system testing metode testing yang digunakan pada pembuatan Web ini adalah metode Blackbox. Dari hasil pengujian ini dapat disimpulkan bahwa Website ini dapat berjalan sesuai dengan fungsi. Website ini secara umum mempergunakan proses pengolahan manajemen database yaitu dari sisi Admin Majelis berupa manajemen data jemaat, pelayanan kategorial yaitu pernikahan, baptisan, kematian, katekisasi, pengumuman, berita jemaat, pendaftaran jemaat. Pada sisi admin gereja berupa kelola jemaat di masing-masing gereja dan pelayanan kategorial yaitu pernikahan, baptisan, kematian, katekisasi. Pada sisi jemaat berupa mengelola data pribadi dan pelayanan baptisan, katekisasi, pernikahan.
+
+Adanya website Majelis Jemaat GKE Bumi Palangka ini akan memfasilitasi BPH MJBP untuk mengelola data gereja dan jemaat secara terkomputerisasi .
+
+DAFTAR PUSTAKA
+
+Bekti, B. H. 2015. Mahir Membuat Website Dengan Adobe Dreamweaver CS6, CSS dan JQuery. Yogyakarta: Andi.
+
+Cherry, Collin. 2021. Pengertian Sistem. [Online]. Available : https://pakdosen.co.id/20-pengertian-sistem-menurut-para-ahli-dalam-bukunya/. [Diakses pada tanggal 20 Desember 2020]
+
+Fany Andalia, E. B. Setiawan. 2015. Pengembangan Sistem Informasi Pengolahan Data Pencari Kerja Pada Dinas Sosial Dan Tenaga Kerja Kota Padang. Jurnal Ilmiah Komputer dan Informatika (KOMPUTA). Vol. 4, No. 2, ISSN : 2089-9033. Halaman 93-94.
+
+Hendrikus Yusharnadi & Magdalena A. Ineke Pakareng. 2016. Perancangan Sistem Informasi Data Jemaat Berbasis Web Pada GKJ Mergangsan Yogyakarta. Salatiga : Universitas Kristen Satya Wacana.
+
+MJBP. 2020. Data Jemaat Majelis Jemaat GKE Bumi Palangka.
+
+Natalia, Silvia. 2015. Rancang Bangun Sistem Informasi Gereja GKE Samaria Palangka Raya Berbasis Web. Skripsi. Palangka Raya : Universitas Palangka Raya.
+
+Pressman, S. Roger. 2010. Pendekatan Praktisi Rekayasa Perangkat Lunak Edisi 7. Yogyakarta : Penerbit Andi. Halaman 45-46.
+
+Royce, Winston. 1970. Managing the Development of Large Software Systems, Proceedings of IEEE WESCON 26 (August): 1–9.
+
+Rupilele, Frits Gerit John. Perancangan Sistem Informasi Manajemen Pelananan Anggota Jemaat Baptisan dan Pernikahan Berbasis Web (Studi Kasus : Gekari Lembah Pujian Kota Sorong). Jurnal Teknologi Informasi Dan Ilmu Komputer (JTIIK). 5(2), 156-157, 2018.
+
+Turban, Leidner, McLean, and Wetherbe. 2008. Information Technology for Management. 6th ed.: John Wiley & Sons (Asis) Pte Ltd.

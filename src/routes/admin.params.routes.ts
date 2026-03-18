@@ -202,4 +202,58 @@ router.put("/:id", auth, requireRole("admin"), async (req: AuthedRequest, res) =
   }
 });
 
+/**
+ * PATCH /api/admin/params/:id/activate
+ * Activate a params row: set active_from = NOW() (if not yet past), active_to = NULL.
+ * Also deactivates all other params by setting their active_to = NOW().
+ */
+router.patch("/:id/activate", auth, requireRole("admin"), async (req: AuthedRequest, res) => {
+  const ip = getClientIp(req);
+
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id) || id <= 0) {
+    return res.status(400).json({ ok: false, message: "Invalid params id" });
+  }
+
+  try {
+    const [existing] = await db.query<any[]>(
+      `SELECT id_params FROM algoritma_params WHERE id_params = ? LIMIT 1`,
+      [id]
+    );
+    if (!existing[0]) return res.status(404).json({ ok: false, message: "Params not found" });
+
+    // Deactivate all other rows
+    await db.query(
+      `UPDATE algoritma_params SET active_to = NOW() WHERE id_params != ? AND (active_to IS NULL OR active_to > NOW())`,
+      [id]
+    );
+
+    // Activate this row
+    await db.query(
+      `UPDATE algoritma_params SET active_from = NOW(), active_to = NULL WHERE id_params = ?`,
+      [id]
+    );
+
+    await audit({
+      user_id: req.user!.id,
+      action: "ADMIN_ACTIVATE_PARAMS",
+      entity: "algoritma_params",
+      entity_id: id,
+      ip_addr: ip,
+    });
+
+    const [rows] = await db.query<any[]>(
+      `SELECT id_params, k, w, base, threshold, active_from, active_to
+       FROM algoritma_params
+       WHERE id_params = ?
+       LIMIT 1`,
+      [id]
+    );
+
+    return res.json({ ok: true, params: rows[0] });
+  } catch (e: any) {
+    return res.status(500).json({ ok: false, message: e?.message ?? "Server error" });
+  }
+});
+
 export default router;
