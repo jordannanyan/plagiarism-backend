@@ -17,6 +17,8 @@ function hash64(str: string): bigint {
   const h = crypto.createHash("sha1").update(str).digest();
   let x = 0n;
   for (let i = 0; i < 8; i++) x = (x << 8n) | BigInt(h[i]);
+  // Convert unsigned 64-bit to signed 64-bit to fit MySQL BIGINT column
+  if (x >= 0x8000000000000000n) x -= 0x10000000000000000n;
   return x;
 }
 
