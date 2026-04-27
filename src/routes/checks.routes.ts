@@ -59,13 +59,28 @@ function readTextSafe(p: string): string {
 
 /**
  * POST /api/checks
- * body: { doc_id: number, max_candidates?: number }
+ * body: { doc_id: number, max_candidates?: number, target_dosen?: number[] }
+ *
+ * target_dosen: array id_dosen yang akan menjadi tujuan verifikasi.
+ *   - jika kosong/undefined: legacy mode (semua dosen bisa lihat).
+ *   - jika diisi: hanya dosen di list ini yang akan melihat check ini.
  */
 router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequest, res) => {
   const ip = getClientIp(req);
 
   const docId = Number(req.body?.doc_id);
   const maxCandidates = Math.min(Number(req.body?.max_candidates ?? 10), 50);
+
+  const targetDosenRaw = req.body?.target_dosen;
+  const targetDosenIds: number[] = Array.isArray(targetDosenRaw)
+    ? Array.from(
+        new Set(
+          targetDosenRaw
+            .map((x: any) => Number(x))
+            .filter((n: number) => Number.isFinite(n) && n > 0)
+        )
+      )
+    : [];
 
   if (!Number.isFinite(docId) || docId <= 0) {
     return res.status(400).json({ ok: false, message: "doc_id is required" });
@@ -105,6 +120,20 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
       [req.user!.id, docId, params.id_params]
     );
     const checkId = insCheck.insertId as number;
+
+    if (targetDosenIds.length > 0) {
+      const [validDosen] = await conn.query<any[]>(
+        `SELECT id_dosen FROM dosen WHERE id_dosen IN (?)`,
+        [targetDosenIds]
+      );
+      const validIds = validDosen.map((r: any) => Number(r.id_dosen));
+      for (const idDosen of validIds) {
+        await conn.query(
+          `INSERT IGNORE INTO check_target_dosen (id_check, id_dosen) VALUES (?, ?)`,
+          [checkId, idDosen]
+        );
+      }
+    }
 
     await audit({
       user_id: req.user!.id,

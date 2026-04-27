@@ -203,6 +203,54 @@ router.put("/:id", auth, requireRole("admin"), async (req: AuthedRequest, res) =
 });
 
 /**
+ * DELETE /api/admin/params/:id
+ * Hapus baris params. Tidak boleh menghapus baris yang masih dirujuk
+ * oleh check_request (FK), jadi cek dulu.
+ */
+router.delete("/:id", auth, requireRole("admin"), async (req: AuthedRequest, res) => {
+  const ip = getClientIp(req);
+
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id) || id <= 0) {
+    return res.status(400).json({ ok: false, message: "Invalid params id" });
+  }
+
+  try {
+    const [existing] = await db.query<any[]>(
+      `SELECT id_params FROM algoritma_params WHERE id_params = ? LIMIT 1`,
+      [id]
+    );
+    if (!existing[0]) return res.status(404).json({ ok: false, message: "Params not found" });
+
+    const [used] = await db.query<any[]>(
+      `SELECT COUNT(*) AS n FROM check_request WHERE params_id = ?`,
+      [id]
+    );
+    if ((used?.[0]?.n ?? 0) > 0) {
+      return res.status(409).json({
+        ok: false,
+        message:
+          "Params ini sudah pernah dipakai untuk check, tidak bisa dihapus. Nonaktifkan saja (set active_to).",
+      });
+    }
+
+    await db.query(`DELETE FROM algoritma_params WHERE id_params = ?`, [id]);
+
+    await audit({
+      user_id: req.user!.id,
+      action: "ADMIN_DELETE_PARAMS",
+      entity: "algoritma_params",
+      entity_id: id,
+      ip_addr: ip,
+    });
+
+    return res.json({ ok: true, message: "Params deleted" });
+  } catch (e: any) {
+    return res.status(500).json({ ok: false, message: e?.message ?? "Server error" });
+  }
+});
+
+/**
  * PATCH /api/admin/params/:id/activate
  * Activate a params row: set active_from = NOW() (if not yet past), active_to = NULL.
  * Also deactivates all other params by setting their active_to = NOW().
