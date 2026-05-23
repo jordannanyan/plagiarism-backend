@@ -11,6 +11,7 @@ import {
   estimateMinhashSim,
   buildMatchSpans,
 } from "../utils/plagiarism";
+import { stripUncheckableSections } from "../utils/textExtract";
 
 const router = Router();
 
@@ -143,8 +144,10 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
       ip_addr: ip,
     });
 
-    // load doc text
-    const docText = readTextSafe(doc.path_text);
+    // load doc text + buang bagian yang tidak ikut dicek (header & daftar pustaka)
+    const docTextRaw = readTextSafe(doc.path_text);
+    const docStripped = stripUncheckableSections(docTextRaw);
+    const docText = docStripped.cleanedText;
     if (!docText || docText.trim().length < k) {
       await conn.query(
         `UPDATE check_request SET status='failed', finished_at=NOW() WHERE id_check=?`,
@@ -169,7 +172,8 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
     const scoredCandidates: { id_corpus: number; title: string; approx: number }[] = [];
 
     for (const c of corpusRows) {
-      const cText = readTextSafe(c.path_text);
+      const cTextRaw = readTextSafe(c.path_text);
+      const cText = stripUncheckableSections(cTextRaw).cleanedText;
       if (!cText || cText.trim().length < k) continue;
 
       const sigC = minhashSignature(cText, k, 100);
@@ -199,7 +203,8 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
       const c = corpusRows.find((x) => x.id_corpus === cand.id_corpus);
       if (!c) continue;
 
-      const cText = readTextSafe(c.path_text);
+      const cTextRaw = readTextSafe(c.path_text);
+      const cText = stripUncheckableSections(cTextRaw).cleanedText;
       const fpC = winnow(cText, k, w);
 
       const sim = fingerprintSimilarity(fpDoc, fpC); // 0..1
@@ -376,15 +381,24 @@ router.get("/:id", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRe
       matches = mRows;
     }
 
-    // optional: return doc preview text for highlighting (first 8000 chars)
+    // return doc preview text utuh untuk highlight (tidak dipotong)
     const preview = (req.query.preview as string | undefined) !== "0";
     let doc_preview_text: string | null = null;
+    let excluded_ranges: Array<{ start: number; end: number; reason: string }> = [];
     if (preview && check.path_text) {
       const t = readTextSafe(check.path_text);
-      doc_preview_text = t.slice(0, 8000);
+      doc_preview_text = t;
+      excluded_ranges = stripUncheckableSections(t).removed;
     }
 
-    return res.json({ ok: true, check, result, matches, doc_preview_text });
+    return res.json({
+      ok: true,
+      check,
+      result,
+      matches,
+      doc_preview_text,
+      excluded_ranges,
+    });
   } catch (e: any) {
     return res.status(500).json({ ok: false, message: e?.message ?? "Server error" });
   }

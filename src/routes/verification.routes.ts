@@ -35,6 +35,43 @@ async function getDosenIdByUserId(userId: number): Promise<number | null> {
   return rows?.[0]?.id_dosen ?? null;
 }
 
+/**
+ * Cek apakah dosen ini berhak terhadap resultId.
+ * Berhak bila:
+ *  - dosen termasuk dalam check_target_dosen untuk check terkait, ATAU
+ *  - check_request tidak memiliki target sama sekali (legacy)
+ * Return:
+ *  - { ok: true, checkId } bila berhak
+ *  - { ok: false, reason } bila tidak
+ */
+async function ensureDosenTargetedForResult(
+  resultId: number,
+  dosenId: number
+): Promise<{ ok: true; checkId: number } | { ok: false; reason: "not_found" | "forbidden" }> {
+  const [rows] = await db.query<any[]>(
+    `SELECT cr.id_check
+     FROM check_result cr2
+     JOIN check_request cr ON cr.id_check = cr2.check_id
+     WHERE cr2.id_result = ?
+     LIMIT 1`,
+    [resultId]
+  );
+  const checkId = rows?.[0]?.id_check;
+  if (!checkId) return { ok: false, reason: "not_found" };
+
+  const [tRows] = await db.query<any[]>(
+    `SELECT
+       (SELECT COUNT(*) FROM check_target_dosen WHERE id_check = ?) AS total_targets,
+       (SELECT COUNT(*) FROM check_target_dosen WHERE id_check = ? AND id_dosen = ?) AS is_target`,
+    [checkId, checkId, dosenId]
+  );
+  const totalTargets = Number(tRows?.[0]?.total_targets ?? 0);
+  const isTarget = Number(tRows?.[0]?.is_target ?? 0) > 0;
+
+  if (totalTargets === 0 || isTarget) return { ok: true, checkId };
+  return { ok: false, reason: "forbidden" };
+}
+
 function normalizeStatus(s: any): "wajar" | "perlu_revisi" | "plagiarisme" | null {
   if (!s) return null;
   const v = String(s).trim().toLowerCase();
@@ -78,6 +115,18 @@ router.post("/:resultId", auth, requireRole("dosen"), async (req: AuthedRequest,
     );
     const result = rRows[0];
     if (!result) return res.status(404).json({ ok: false, message: "Result not found" });
+
+    // hanya dosen yang ditarget mahasiswa (atau legacy tanpa target) yang boleh verifikasi
+    const access = await ensureDosenTargetedForResult(resultId, dosenId);
+    if (!access.ok) {
+      if (access.reason === "not_found") {
+        return res.status(404).json({ ok: false, message: "Result not found" });
+      }
+      return res.status(403).json({
+        ok: false,
+        message: "Anda bukan dosen yang ditargetkan untuk dokumen ini",
+      });
+    }
 
     // cek apakah sudah ada note
     const [nRows] = await db.query<any[]>(
@@ -395,6 +444,20 @@ router.get("/:resultId", auth, requireRole("dosen"), async (req: AuthedRequest, 
   }
 
   try {
+    const dosenId = await getDosenIdByUserId(req.user!.id);
+    if (!dosenId) return res.status(403).json({ ok: false, message: "Dosen profile not found for this user" });
+
+    const access = await ensureDosenTargetedForResult(resultId, dosenId);
+    if (!access.ok) {
+      if (access.reason === "not_found") {
+        return res.status(404).json({ ok: false, message: "Result not found" });
+      }
+      return res.status(403).json({
+        ok: false,
+        message: "Anda bukan dosen yang ditargetkan untuk dokumen ini",
+      });
+    }
+
     const [rows] = await db.query<any[]>(
       `
       SELECT
