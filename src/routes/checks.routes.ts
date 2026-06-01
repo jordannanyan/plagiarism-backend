@@ -59,6 +59,18 @@ function readTextSafe(p: string): string {
 }
 
 /**
+ * Baca flag exclude_metadata dari summary_json.
+ * Default true untuk record lama (yang selalu di-strip sebelum fitur ini ada).
+ */
+function readExcludeMetadata(summaryJson: any): boolean {
+  try {
+    const obj = typeof summaryJson === "string" ? JSON.parse(summaryJson) : summaryJson;
+    if (obj && typeof obj.exclude_metadata === "boolean") return obj.exclude_metadata;
+  } catch {}
+  return true;
+}
+
+/**
  * POST /api/checks
  * body: { doc_id: number, max_candidates?: number, target_dosen?: number[] }
  *
@@ -71,6 +83,11 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
 
   const docId = Number(req.body?.doc_id);
   const maxCandidates = Math.min(Number(req.body?.max_candidates ?? 10), 50);
+
+  // exclude_metadata: true => kecualikan header (penulis/universitas) & daftar pustaka.
+  //                   false => semua teks dicek.
+  // default true (perilaku lama).
+  const excludeMetadata = req.body?.exclude_metadata === undefined ? true : Boolean(req.body.exclude_metadata);
 
   const targetDosenRaw = req.body?.target_dosen;
   const targetDosenIds: number[] = Array.isArray(targetDosenRaw)
@@ -144,10 +161,10 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
       ip_addr: ip,
     });
 
-    // load doc text + buang bagian yang tidak ikut dicek (header & daftar pustaka)
+    // load doc text. Jika excludeMetadata: buang header (penulis/universitas) &
+    // daftar pustaka. Jika tidak: pakai seluruh teks.
     const docTextRaw = readTextSafe(doc.path_text);
-    const docStripped = stripUncheckableSections(docTextRaw);
-    const docText = docStripped.cleanedText;
+    const docText = excludeMetadata ? stripUncheckableSections(docTextRaw).cleanedText : docTextRaw;
     if (!docText || docText.trim().length < k) {
       await conn.query(
         `UPDATE check_request SET status='failed', finished_at=NOW() WHERE id_check=?`,
@@ -173,7 +190,7 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
 
     for (const c of corpusRows) {
       const cTextRaw = readTextSafe(c.path_text);
-      const cText = stripUncheckableSections(cTextRaw).cleanedText;
+      const cText = excludeMetadata ? stripUncheckableSections(cTextRaw).cleanedText : cTextRaw;
       if (!cText || cText.trim().length < k) continue;
 
       const sigC = minhashSignature(cText, k, 100);
@@ -204,7 +221,7 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
       if (!c) continue;
 
       const cTextRaw = readTextSafe(c.path_text);
-      const cText = stripUncheckableSections(cTextRaw).cleanedText;
+      const cText = excludeMetadata ? stripUncheckableSections(cTextRaw).cleanedText : cTextRaw;
       const fpC = winnow(cText, k, w);
 
       const sim = fingerprintSimilarity(fpDoc, fpC); // 0..1
@@ -232,6 +249,7 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
 
     const summary = {
       params: { id_params: params.id_params, k, w, threshold },
+      exclude_metadata: excludeMetadata,
       candidates: candidates.map((x) => ({ id_corpus: x.id_corpus, title: x.title, approx: x.approx })),
       best_similarity: bestSim,
     };
@@ -288,6 +306,7 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
       result_id: resultId,
       similarity: similarityPercent,
       threshold,
+      exclude_metadata: excludeMetadata,
       candidates_count: candidates.length,
       matches_inserted: matchesToInsert.length,
     });
@@ -381,6 +400,9 @@ router.get("/:id", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRe
       matches = mRows;
     }
 
+    // mode pengecekan dokumen ini (true = metadata dikecualikan)
+    const excludeMetadata = readExcludeMetadata(result?.summary_json);
+
     // return doc preview text utuh untuk highlight (tidak dipotong)
     const preview = (req.query.preview as string | undefined) !== "0";
     let doc_preview_text: string | null = null;
@@ -388,7 +410,8 @@ router.get("/:id", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRe
     if (preview && check.path_text) {
       const t = readTextSafe(check.path_text);
       doc_preview_text = t;
-      excluded_ranges = stripUncheckableSections(t).removed;
+      // hanya tampilkan area dikecualikan kalau check memang pakai mode exclude
+      excluded_ranges = excludeMetadata ? stripUncheckableSections(t).removed : [];
     }
 
     return res.json({
@@ -398,6 +421,7 @@ router.get("/:id", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRe
       matches,
       doc_preview_text,
       excluded_ranges,
+      exclude_metadata: excludeMetadata,
     });
   } catch (e: any) {
     return res.status(500).json({ ok: false, message: e?.message ?? "Server error" });

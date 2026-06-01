@@ -24,6 +24,17 @@ function readTextSafe(p: string): string {
 }
 
 /**
+ * Baca flag exclude_metadata dari summary_json. Default true (record lama).
+ */
+function readExcludeMetadata(summaryJson: any): boolean {
+  try {
+    const obj = typeof summaryJson === "string" ? JSON.parse(summaryJson) : summaryJson;
+    if (obj && typeof obj.exclude_metadata === "boolean") return obj.exclude_metadata;
+  } catch {}
+  return true;
+}
+
+/**
  * Cek apakah dosen punya akses ke resultId (lewat check_target_dosen).
  * Backward-compat: kalau check tidak punya target sama sekali (legacy),
  * semua dosen boleh akses.
@@ -289,7 +300,8 @@ router.get("/results/:resultId/detail", auth, requireRole("dosen"), async (req: 
         cr.id_check, cr.requested_by, cr.doc_id, cr.params_id,
         cr.status, cr.queued_at, cr.started_at, cr.finished_at,
         ud.title AS doc_title, ud.path_text,
-        cr2.id_result, cr2.similarity, cr2.created_at AS result_created_at
+        cr2.id_result, cr2.similarity, cr2.created_at AS result_created_at,
+        cr2.summary_json
       FROM check_result cr2
       JOIN check_request cr ON cr.id_check = cr2.check_id
       JOIN user_document ud ON ud.id_doc = cr.doc_id
@@ -300,6 +312,9 @@ router.get("/results/:resultId/detail", auth, requireRole("dosen"), async (req: 
     );
     const row = rRows[0];
     if (!row) return res.status(404).json({ ok: false, message: "Result not found" });
+
+    // mode pengecekan: true = metadata (penulis/univ/daftar pustaka) dikecualikan
+    const excludeMetadata = readExcludeMetadata(row.summary_json);
 
     const [mRows] = await db.query<any[]>(
       `
@@ -317,7 +332,7 @@ router.get("/results/:resultId/detail", auth, requireRole("dosen"), async (req: 
     if (row.path_text) {
       const t = readTextSafe(row.path_text);
       doc_preview_text = t;
-      excluded_ranges = stripUncheckableSections(t).removed;
+      excluded_ranges = excludeMetadata ? stripUncheckableSections(t).removed : [];
     }
 
     return res.json({
@@ -341,6 +356,7 @@ router.get("/results/:resultId/detail", auth, requireRole("dosen"), async (req: 
       matches: mRows,
       doc_preview_text,
       excluded_ranges,
+      exclude_metadata: excludeMetadata,
     });
   } catch (e: any) {
     return res.status(500).json({ ok: false, message: e?.message ?? "Server error" });

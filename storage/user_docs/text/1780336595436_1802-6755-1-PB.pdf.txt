@@ -1,0 +1,229 @@
+e-ISBN 978-623-93343-4-5
+Seminar Nasional Mahasiswa Ilmu Komputer dan Aplikasinya (SENAMIKA)
+Jakarta-Indonesia, 15 September 2021
+103
+Deteksi Penyakit Pada Daun Tanaman Padi Menggunakan Metode
+Convolutional Neural Network
+Syaikhul Anam Alidrus 1, Musthafa Aziz 2, Oddy Virgantara Putra3
+Program Studi Teknik Informatika
+Universitas Darussalam Gontor
+Jl. Raya Siman Kec.Siman Kab.Ponorogo
+syaikhulanam@mhs.unida.gontor.ac.id1, aziz@unida.gontor.ac.id2, oddy@unida.gontor.ac.id3
+Abstrak. Penyakit tanaman padi merupakan salah satu faktor penyebab tingginya angka kerugian akibat gagal
+panen. Serangan organisme penggangu tanaman (OPT) yang sering menyerang tanaman padi khususnya pada
+bagian daun dapat mengakibatkan tanaman mati. Keterlambatan proses diagnosis secara manual menyebabkan
+penyakit yang ada pada tanaman padi mencapai tahap parah, sehingga menimbulkan terjadinya peningkatan
+gagal panen. Penelitian ini bertujuan untuk mengidentifikasi dan mengklasifikasi jenis penyakit yang diderita
+oleh daun tanaman padi. Penelitian ini membangun sebuah model dengan menggunakan metode algoritma
+Convolutional Neural Network (CNN). Convolutional Neural Network merupakan salah satu algoritma yang
+cukup efektif dalam pengolahan citra. Citra akan melalui proses resizing, cropping dan ekstraksi fitur. Dataset
+yang digunakan adalah RiceLeafs datasets dengan total 900 sampel citra daun padi, 780 citra sebagai data latih
+dan 180 sebagai data validasi. Dalam proses pemodelan terdapat empat convolutional layers dan empat max
+pooling layers diikuti oleh dua fully connected layer. Hasil pengujian pada model yang telah dibangun memiliki
+persentase rata-rata accuracy 92% dari data latih.
+Kata Kunci: Penyakit tanaman padi, Convolutional Neural Network, Image Processing
+1 Pendahuluan
+Padi yang menghasilkan beras merupakan salah satu makanan pokok yang banyak dikonsumsi oleh masyarakat
+Indonesia, sehingga tanaman tersebut menjadi salah satu bidang pertanian yang digalakkan hampir disetiap
+wilayah Indonesia. Tingkat keberhasilan jumlah padi yang dipanen menjadi hal yang sangat berpengaruh.
+Serangan organisme penggangu tanaman (OPT) yang sering menyerang tanaman padi khususnya pada bagian daun
+sehingga menyebabkan gagal panen. Keterlambatan proses diagnosis secara manual menyebabkan penyakit yang
+ada pada tanaman padi mencapai tahap parah karena minimnya pengetahuan petani dan menganggap gejala
+tersebut sudah biasa tejadi pada masa tanam, sehingga menimbulkan terjadinya gagal panen. Kontrol yang tepat
+bukan hanya ketika serangan sudah terjadi, tetapi yang paling penting adalah tindakan pencegahan[1].
+Metode algoritma Convolutional Neural Network (CNN) merupakan pengembangan dari Multi Layer Perceptron
+(MLP) yang didesain untuk mengolah data citra dua dimensi. Algoritma CNN diketahui dapat menghasilkan
+tingkat akurasi yang signifikan dikarenakan metode ini memiliki kedalaman jaringan yang tinggi serta mampu
+mempelajari sendiri fitur yang terdapat pada citra yang kompleks[2]. Setiap citra yang dimasukan akan melewati
+serangkaian proses seperti convolutional layer, pooling yang berguna untuk mengekstraksi fitur dari citra, flatten
+dan proses terakhir adalah fully-connected layer yang berguna untuk melaksanakan tugas pengklasifikasian.
+Sehingga penggunaan algoritma CNN dalam pengolahan citra terbilang cukup efektif.
+Beberapa penelitian terkait pendeteksian penyakit pada daun tanaman sebelumnya telah dilakukan. Salah satunya
+dengan melakukan implementasi metode SVM dan CNN untuk identifikasi penyakit daun taman tomat[3].
+Identifikasi penyakit yang dilakukan dalam penelitian ini menggunakan supervised classification. Citra yang akan
+diidentifikasi akan melalui beberapa proses seperti proses transformasi warna RGB (Red Green Blue) ke HSV
+(Hue Saturation Value), HSV (Hue Saturation Value) ke Graysclae, dan proses ekstraksi fitur tekstur dengan
+GLCM (Gray Level Co-occurrence Matrix). Selanjutnya peneliti akan melakukan proses klasifikasi dengan
+menggunakan metode SVM (Support Vector Machine) dan CNN (Convolutional Neural Network). Hasil dari
+pengujian yang dilakukan menunjukan metode CNN mendapatkan hasil presentase rata-rata cukup baik dengan
+nilai accuracy 97.5% sedangkan metode SVM mendapatkan hasil dengan nilai accuracy 95%.
+Penelitian berikutnya juga melakukan pendeteksian penyakit pada citra daun tanaman tomat dengan menggunakan
+metode Convolutional Neural Network (CNN)[4]. Data yang digunakan pada penelitian ini adalah data penyakit
+
+-- 1 of 7 --
+
+e-ISBN 978-623-93343-4-5
+Seminar Nasional Mahasiswa Ilmu Komputer dan Aplikasinya (SENAMIKA)
+Jakarta-Indonesia, 15 September 2021
+104
+daun tanaman tomat yang diperoleh dari Plant Village dataset. Data tersebut terdiri dari 10.000 data training, 700
+data validation dan 50 data yang diambil dari setiap kategori secara acak sebagai data testing. Dalam penerapan
+metode Convolutional Neural Network dalam membangun model, peneliti menggunakan tiga convolutional layers
+dan tiga max pooling layers. Hasil rata-rata akurasi pengujian model adalah 91.2%.
+Penggunaan teknik machine learning yang dikembangkan oleh [5] dalam pendeteksian penyakit pada daun
+tanaman padi. Penelitian ini menggunakan beberapa metode supervised classification alhorithms diantaranya K-
+Nearest Neighbor (KNN), Decision Tree, Naïve Bayes dan Logistic Regression. Data yang digunakan adalah data
+yang dibuat secara manual dengan memisahkan daun terinfeksi menjadi tig akelas penyakit yang berbeda, yaitu
+bachterial leaf blight, brown spot dan leaf smut. Peneliti menggunakan teknik 10-fold cross validation pada dataset
+yang ada. Sehingga akurasi yang dihasilkan dari setiap metode bermacam-macam antara lain Logistic Regression
+75.463%, KNN (K=1) 98.8426%, KNN (K=3) 85.6481%, Decision Tree 94.9074% dan Naïve Bayes 58.7963%.
+Dalam penelitian lain [1] penggunaan metode Deep Learning untuk mendeteksi penyakit pada daun tanaman cabai.
+Dataset yang digunakan dalam penelitian ini terdiri dari 500 citra daun cabai sehat dan 500 citra daun cabai sakit.
+Selanjutnya peneliti menggunakan 100 citra sebagai data uji dari masing-masing kategori data. Hasil akurasi yang
+didapat dengan mengimplementasikan metode Deep Learning berkisar antara 68.8% hingga 100%. Tingkat
+kualitas pencahayaan pada citra menjadi salah satu faktor yang berpengaruh pada hasil akurasi yang didapat.
+Dalam penelitian ini akan berfokus pada penerapan metode algoritma Convolutional Neural Network (CNN) dalam
+membangun model untuk melakukan identifikasi dan klasifikasi jenis penyakit yang diderita oleh daun tanaman
+padi. Adapun jenis penyakit dalam pengklasifikasian pada penelitian ini ada tiga jenis yaitu blast, brown spot dan
+hispa.
+2 Metode Penelitian
+Tujuan utama dari penelitian ini adalah untuk membangun model deteksi penyakit pada daun tanaman padi dengan
+menggunakan metode algoritma Convolutional Neural Network (CNN), metode ini cukup efektif dalam
+pengolahan citra karena dapat melakukan proses latih untuk mempelajari fitur-fitur sebuah citra seperti pola, warna
+dan tekstur[6].
+2.1 Pre-processing
+Pada bagian pre-processing terdapat dua tahapan yang pertama adalah pengumpulan data. Teknik pengumpulan
+data yang dilakukan dalam penelitian ini menggunakan metode studi pustaka dan observasi. Data studi pustaka
+yang digunakan adalah RiceLeafs datasets diperoleh dari Kaggle dengan total 900 sampel citra daun tanaman padi
+berpenyakit dengan ukuran dimensi 1566 x 1566 pixel. Dataset ini memiliki tiga jenis kelas penyakit dengan
+jumlah 300 sampel citra perkelas dengan rincian pembagian kelas pada Tabel 1. Setiap jenis penyakit memiliki
+perbedaan pola dan bentuk yang khas, seperti yang ditampilkan pada Gambar 1.
+Tabel 6. Pembagian Jenis Daun Padi Berpenyakit
+No Nama Kelas Jumlah Data
+1 Blast 300
+2 BrownSpot 300
+3 Hispa 300
+
+-- 2 of 7 --
+
+e-ISBN 978-623-93343-4-5
+Seminar Nasional Mahasiswa Ilmu Komputer dan Aplikasinya (SENAMIKA)
+Jakarta-Indonesia, 15 September 2021
+105
+Gambar. 1..(a) Blast, (b) BrownSpot, (c) Hispa
+Dengan melihat contoh pada Gambar 1 maka dapat dijelaskan perbedaan jenis penyakit daun tanaman padi sebagai
+berikut :
+1. Blast: penyakit yang memiliki bercak kuning pada bagian ujung, hingga berwarna kecoklatan dan juga
+kering pada tanaman. Faktor
+2. BrownSpot: terdapatnya bercak coklat berbentuk oval yang merata dipermukaan daun dengan titik tengah
+berwarna abu-abu atau putih.
+3. Hispa: penyakit yang memiliki bercak putih besar akibat serangan serangga dewasa yang mengikis
+permukaan daun.
+Data observasi diperoleh peniliti dengan melakukan pengambilan gambar secara langsung pada sawah padi yang
+bertempat di Desa Babadan, Kec.Babadan Ponorogo dengan ukuran dimensi 4000 x 3000 pixel. Data yang
+didapatkan berjumlah 50 sampel citra. Data tersebut berfokus pada daun padi yang sedang tergejala penyakit,
+seperti ditampilkan pada Gambar 2.
+Gambar. 2. Data hasil observasi
+Proses selanjutnya adalah resizing image pada data citra. Resizing image merupakan proses mengubah ukuran
+dimensi pada suatu citra menjadi lebih besar atau lebih kecil [7] dari ukuran citra sebelumnya. Dalam penelitian
+data citra yang telah didapat akan melakukan resizing image dengan ukuran dimensi 224 x 224 pixel, seperti yang
+ditampilkan pada Gambar 3.
+
+-- 3 of 7 --
+
+e-ISBN 978-623-93343-4-5
+Seminar Nasional Mahasiswa Ilmu Komputer dan Aplikasinya (SENAMIKA)
+Jakarta-Indonesia, 15 September 2021
+106
+Gambar. 3. (a) citra dengan ukuran asli. (b) citra hasil resizing image
+2.2 Rancangan Arsitektur CNN
+Gambar. 4. Rancangan arsitektur CNN
+Penelitian ini menggunakan metode algoritma Convolutional Neural Network (CNN) dalam membangun model
+yang akan dilatih untuk melakukan identifikasi dan klasifikasi jenis penyakit yang diderita daun tanaman padi.
+Data dibagi menjadi beberapa kelas yang berbeda sesuai dengan jenis penyakitnya lalu melewati proses splitting
+data sehingga keseimbangan data yang ada pada setiap kelas telah diterapkan. Dalam rancangan arsitektur yang
+diusulkan, peneliti menerapkan empat convolutional layers dan empat max pooling layers dalam melakukan proses
+ekstraksi fitur untuk menghasilkan feature map. Pada setiap convolutional layers akan menggunakan filter dengan
+dimensi 3 x 3 dan max pooling layers dengan dimensi 2 x 2. Selanjutnya citra akan melalui proses flatten yang
+bertujuan untuk menggubah feature map yang masih berbentuk multidimensional array menjadi sebuah vector
+agar dapat digunakan sebagai input dari fully connected layer yang berfungsi untuk mengolah data sehingga bisa
+diklasifikasikan. Arsitektur CNN yang diterapkan dalam membangun model dapat dilihat pada Gambar 4.
+Sebagai pendukung dalam proses pelatihan data serta untuk mendapatkan hasil akurasi yang baik, peneliti
+menerapkan hyper-parameter dalam pemodelan dijelaskan pada Tabel 2.
+Tabel 7. Hyper Parameter Convolutional Neural Network
+Hyper-parameter Value
+No. of convolutional layer 3
+No. of max pooling layer 3
+Drop out rate 0.4
+Activation function Relu
+Optimizer RMSprop
+
+-- 4 of 7 --
+
+e-ISBN 978-623-93343-4-5
+Seminar Nasional Mahasiswa Ilmu Komputer dan Aplikasinya (SENAMIKA)
+Jakarta-Indonesia, 15 September 2021
+107
+Loss function Categorical-crossentropy
+Epoch 50
+Batch size 32
+3 Hasil dan Pembahasan
+3.2 Pre-processing
+Data hasil studi pustaka yang berjumlah 900 sampel citra yang terbagi dari tida kelas data penyakit (blast,
+brownspot dan hispa), kemudian data dibagi melalui proses splitting dataset dengan pembagian 720 citra sebagai
+data latih dan 180 citra sebagai data validasi. Sebelum memasuki proses latih data yang sudah dibagi selanjutnya
+akan di-resize menjadi lebih kecil dengan ketentuan ukuran dimensi 224 x 224 pixel.
+Semua citra melewati proses filter. Proses filter ini berguna untuk mendapatkan fitur dari setiap citra yang akan
+dideteksi oleh model. Fitur yang dihasilkan pada setiap citra dari proses filter ini, dapat dipengaruhi mulai dari
+tingginya cahaya hingga perbedaan pola yang ada pada citra. Dengan ketentuan gambar kotak gelap menunjukan
+bobot kecil dan gambar kotak terang menunjukan bobot yang besar pada suatu citra. Berikut beberapa fitur yang
+didapatkan pada citra daun padi berpenyakit dari hasil proses filter yang ditunjukan pada Gambar 5.
+Gambar 5. Fitur daun padi berpenyakit
+3.2 Hasil Penelitian
+Proses pemodelan CNN yang dilakukan dalam penelitian ini telah dieksekusi pada Google Colaboratory dengan
+menggunakan akses GPU yang telah disediakan. Dengan mengimplentasikan arsitektur CNN dan hyper-parameter
+yang telah dirancang. Dalam proses pembelajaran metode algoritma Convolutional Neural Network (CNN)
+memanfaatkan proses konvolusi dengan menggerakan sebuah kernel konvolusi (filter) berukuran tertentu ke
+sebuah gambar.
+Proses ekstraksi fitur yang dilakukan pada arsitektur CNN dengan menggunakan convolutional layers untuk
+mendapatkan nilai fitur dan max pooling layers untuk mengambil nilai tertinggi dari fitur yang telah didapat. Hasil
+ekstraksi fitur yang dilakukan pada setiap layer disajikan pada Gambar 6.
+
+-- 5 of 7 --
+
+e-ISBN 978-623-93343-4-5
+Seminar Nasional Mahasiswa Ilmu Komputer dan Aplikasinya (SENAMIKA)
+Jakarta-Indonesia, 15 September 2021
+108
+Gambar 6. (a)Citra melalui proses pemodelan CNN (b)Ekstraksi fitur pada covolutional layer pertama (c)Ekstraksi fitur
+pada hidden layer kedua (d) Ekstraksi fitur pada hidden layer ketiga (e)Ekstraksi fitur pada hidden layer keempat.
+Pengujian yang dilakukan dengan menggunakan nilai learning rate 50 epoch pada data latih dan data validasi. Pada
+proses pelatihan model menghasilkan nilai accuracy dan nilai loss yang dapat dilihat pada Gambar 7 dan 8.
+Gambar 7. Hasil nilai akurasi dari proses pelatihan pada data latih dan data validasi
+Gambar 8. Hasil nilai loss dari proses pelatihan pada data latih dan data validasi
+Hasil yang ditunjukan oleh Gambar 7 dan 8 menyatakan bahwa presentase pengujian Convolutional Neural
+Network (CNN) yaitu rata-rata accuracy 92% pada data latih dan rata-rata accuracy 77% pada data validasi. Dari
+hasil pengujian yang dilakukan dapat disimpulkan bahwa jumlah layer pada arsitektur CNN dapat mempengaruhi
+tingkat akurasi pada pengujian. Selanjutnya model yang telah dibangun akan diimplementasikan untuk
+mengidentifikasi dan mengklasifikasi jenis penyakit daun tanaman padi pada 50 data uji yang telah tersedia. Hasil
+klasifikasi pada data uji dapat dilihat pada Gambar 9.
+
+-- 6 of 7 --
+
+e-ISBN 978-623-93343-4-5
+Seminar Nasional Mahasiswa Ilmu Komputer dan Aplikasinya (SENAMIKA)
+Jakarta-Indonesia, 15 September 2021
+109
+Gambar 9. Hasil implementasi model pada data uji
+4 Kesimpulan
+Berdasarkan seluruh rangkaian penelitian yang telah dilakukan, maka dapat ditarik kesimpulan sebagai berikut.
+1. Klasifikasi jenis penyakit daun tanaman padi dengan menggunakan metode algoritma Convolutional
+Neural Network (CNN) menghasilkan akurasi yang cukup baik. Dengan memperoleh rata-rata accurasiy
+mencapai 92% pada data latih dan 77% pada data validasi.
+2. Tingkat akurasi dapat dipengaruhi oleh penggunaan arsitektur dan hyper-parameter yang diterapkan.
+Referensi
+[1] A. Wijaya, “Pendeteksian Penyakit pada Daun Cabai dengan Menggunakan Metode Deep Learning,” vol. 6, pp. 452–
+461, 2020.
+[2] G. Wicaksono, S. Andryana, and B. -, “Aplikasi Pendeteksi Penyakit Pada Daun Tanaman Apel Dengan Metode
+Convolutional Neural Network,” JOINTECS (Journal Inf. Technol. Comput. Sci., vol. 5, no. 1, p. 9, 2020, doi:
+10.31328/jointecs.v5i1.1221.
+[3] Felix, S. Faisal, T. F. M. Butarbutar, and P. Sirait, “Implementasi CNN dan SVM untuk Identifikasi Penyakit Tomat
+via Daun,” vol. 20, no. 2, pp. 117–134, 2019.
+[4] M. Agarwal, A. Singh, S. Arjaria, A. Sinha, and S. Gupta, “ToLeD: Tomato Leaf Disease Detection using Convolution
+Neural Network,” Procedia Comput. Sci., vol. 167, no. 2019, pp. 293–301, 2020, doi: 10.1016/j.procs.2020.03.225.
+[5] K. Ahmed, T. R. Shahidi, S. I. Alam, and S. Momen, “Rice Leaf Disease Detection Using Machine Learning
+Techniques,” 2019 Int. Conf. Sustain. Technol. Ind. 4.0, vol. 0, pp. 1–5, 2019.
+[6] D. Li et al., “A recognition method for rice plant diseases and pests video detection based on deep convolutional neural
+network,” Sensors (Switzerland), vol. 20, no. 3, 2020, doi: 10.3390/s20030578.
+
+-- 7 of 7 --
