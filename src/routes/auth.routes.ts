@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "../db";
-import { comparePassword, signJwt } from "../utils/auth";
+import { comparePassword, hashPassword, signJwt } from "../utils/auth";
 import { auth, AuthedRequest } from "../middleware/auth";
 
 const router = Router();
@@ -103,6 +103,118 @@ router.post("/login", async (req, res) => {
     });
   } catch (e: any) {
     return res.status(500).json({ ok: false, message: e?.message ?? "Server error" });
+  }
+});
+
+/**
+ * POST /api/auth/register
+ * Pendaftaran mandiri untuk mahasiswa.
+ * body: { name, email, password, nim?, prodi?, angkatan? }
+ *
+ * Selalu dibuat dengan role "mahasiswa" (tidak menerima role dari client),
+ * langsung aktif, dan otomatis login (mengembalikan token).
+ */
+router.post("/register", async (req, res) => {
+  const ip = getClientIp(req);
+
+  const body = req.body as {
+    name?: string;
+    email?: string;
+    password?: string;
+    nim?: string;
+    prodi?: string;
+    angkatan?: number | string;
+  };
+
+  const name = body.name?.trim();
+  const email = body.email?.trim();
+  const password = body.password;
+
+  if (!name || !email || !password) {
+    return res
+      .status(400)
+      .json({ ok: false, message: "name, email, and password are required" });
+  }
+  if (password.length < 6) {
+    return res
+      .status(400)
+      .json({ ok: false, message: "password must be at least 6 characters" });
+  }
+
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // role mahasiswa
+    const [roleRows] = await conn.query<any[]>(
+      "SELECT id FROM roles WHERE name = 'mahasiswa' LIMIT 1"
+    );
+    const roleId = roleRows?.[0]?.id;
+    if (!roleId) {
+      await conn.rollback();
+      return res
+        .status(500)
+        .json({ ok: false, message: "role 'mahasiswa' not found in roles table" });
+    }
+
+    // cek email unik
+    const [exists] = await conn.query<any[]>(
+      "SELECT id FROM users WHERE email = ? LIMIT 1",
+      [email]
+    );
+    if (exists.length > 0) {
+      await conn.rollback();
+      return res.status(409).json({ ok: false, message: "Email already exists" });
+    }
+
+    const pwdHash = await hashPassword(password);
+
+    const [insUser] = await conn.query<any>(
+      `INSERT INTO users (name, email, password_hash, role_id, is_active)
+       VALUES (?, ?, ?, ?, 1)`,
+      [name, email, pwdHash, roleId]
+    );
+
+    const userId = insUser.insertId as number;
+
+    const angkatan =
+      body.angkatan === undefined || body.angkatan === null || body.angkatan === ""
+        ? null
+        : Number(body.angkatan);
+
+    await conn.query(
+      `INSERT INTO mahasiswa (user_id, nim, prodi, angkatan)
+       VALUES (?, ?, ?, ?)`,
+      [userId, body.nim?.trim() || null, body.prodi?.trim() || null, angkatan]
+    );
+
+    await conn.commit();
+
+    await writeAuditLog({
+      user_id: userId,
+      action: "REGISTER",
+      entity: "users",
+      entity_id: userId,
+      ip_addr: ip,
+    });
+
+    const token = signJwt({
+      id: userId,
+      name,
+      email,
+      role: "mahasiswa",
+    });
+
+    return res.status(201).json({
+      ok: true,
+      token,
+      user: { id: userId, name, email, role: "mahasiswa" },
+    });
+  } catch (e: any) {
+    await conn.rollback();
+    return res.status(500).json({ ok: false, message: e?.message ?? "Server error" });
+  } finally {
+    conn.release();
   }
 });
 

@@ -12,8 +12,16 @@ import {
   buildMatchSpans,
 } from "../utils/plagiarism";
 import { stripUncheckableSections } from "../utils/textExtract";
+import { readExcludeMetadata, readSources, readThreshold } from "../utils/checkSummary";
 
 const router = Router();
+
+/**
+ * Batas jumlah span match yang disimpan per sumber. Span dipilih berdasarkan
+ * PANJANG (paling bermakna), bukan urutan posisi — kalau dipotong menurut
+ * posisi, bagian akhir dokumen tidak akan pernah tersorot sama sekali.
+ */
+const MAX_SPANS_PER_SOURCE = 200;
 
 function getClientIp(req: any): string | null {
   const xf = req.headers["x-forwarded-for"];
@@ -56,18 +64,6 @@ function readTextSafe(p: string): string {
   } catch {
     return "";
   }
-}
-
-/**
- * Baca flag exclude_metadata dari summary_json.
- * Default true untuk record lama (yang selalu di-strip sebelum fitur ini ada).
- */
-function readExcludeMetadata(summaryJson: any): boolean {
-  try {
-    const obj = typeof summaryJson === "string" ? JSON.parse(summaryJson) : summaryJson;
-    if (obj && typeof obj.exclude_metadata === "boolean") return obj.exclude_metadata;
-  } catch {}
-  return true;
 }
 
 /**
@@ -164,7 +160,11 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
     // load doc text. Jika excludeMetadata: buang header (penulis/universitas) &
     // daftar pustaka. Jika tidak: pakai seluruh teks.
     const docTextRaw = readTextSafe(doc.path_text);
-    const docText = excludeMetadata ? stripUncheckableSections(docTextRaw).cleanedText : docTextRaw;
+    const docStripped = stripUncheckableSections(docTextRaw);
+    const docText = excludeMetadata ? docStripped.cleanedText : docTextRaw;
+    // offset teks yang dicek terhadap file asli — span harus digeser sebesar ini
+    // supaya highlight jatuh di posisi yang benar pada preview.
+    const docOffset = excludeMetadata ? docStripped.startOffset : 0;
     if (!docText || docText.trim().length < k) {
       await conn.query(
         `UPDATE check_request SET status='failed', finished_at=NOW() WHERE id_check=?`,
@@ -186,7 +186,12 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
     const sigDoc = minhashSignature(docText, k, 100);
     const bucketsDoc = new Set(lshBuckets(sigDoc, 20));
 
-    const scoredCandidates: { id_corpus: number; title: string; approx: number }[] = [];
+    const scoredCandidates: {
+      id_corpus: number;
+      title: string;
+      approx: number;
+      lsh: boolean;
+    }[] = [];
 
     for (const c of corpusRows) {
       const cTextRaw = readTextSafe(c.path_text);
@@ -196,24 +201,43 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
       const sigC = minhashSignature(cText, k, 100);
       const bucketsC = lshBuckets(sigC, 20);
 
-      // if share at least 1 bucket, candidate
       let share = false;
       for (const b of bucketsC) {
         if (bucketsDoc.has(b)) { share = true; break; }
       }
-      if (!share) continue;
 
       const approx = estimateMinhashSim(sigDoc, sigC);
-      scoredCandidates.push({ id_corpus: c.id_corpus, title: c.title, approx });
+
+      // LSH dipakai sebagai PENANDA kandidat kuat, bukan gerbang penolak.
+      // Dengan 100 permutasi dan 20 band (5 baris/band), ambang efektif LSH
+      // adalah (1/20)^(1/5) ≈ 0.55 — dokumen yang "hanya" 16% mirip tidak
+      // pernah berbagi bucket, sehingga plagiarisme SEBAGIAN (kasus paling
+      // umum) langsung dibuang sebelum diverifikasi Winnowing dan dilaporkan
+      // sebagai 0% tanpa sumber. Gerbang ini juga tidak menghemat komputasi,
+      // karena MinHash setiap dokumen corpus sudah terlanjur dihitung di atas.
+      // Pembatas biaya yang sebenarnya adalah maxCandidates di bawah.
+      if (approx <= 0 && !share) continue;
+
+      scoredCandidates.push({ id_corpus: c.id_corpus, title: c.title, approx, lsh: share });
     }
 
-    scoredCandidates.sort((a, b) => b.approx - a.approx);
+    // kandidat yang berbagi bucket LSH didahulukan, sisanya menurut estimasi MinHash
+    scoredCandidates.sort(
+      (a, b) => Number(b.lsh) - Number(a.lsh) || b.approx - a.approx
+    );
     const candidates = scoredCandidates.slice(0, maxCandidates);
 
     // --- Winnowing verification on candidates ---
     const fpDoc = winnow(docText, k, w);
 
     const matchesToInsert: any[] = [];
+    const sources: {
+      id_corpus: number;
+      title: string;
+      similarity: number;
+      approx: number;
+      above_threshold: boolean;
+    }[] = [];
     let bestSim = 0;
 
     for (const cand of candidates) {
@@ -221,23 +245,49 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
       if (!c) continue;
 
       const cTextRaw = readTextSafe(c.path_text);
-      const cText = excludeMetadata ? stripUncheckableSections(cTextRaw).cleanedText : cTextRaw;
+      const cStripped = stripUncheckableSections(cTextRaw);
+      const cText = excludeMetadata ? cStripped.cleanedText : cTextRaw;
+      const cOffset = excludeMetadata ? cStripped.startOffset : 0;
       const fpC = winnow(cText, k, w);
 
       const sim = fingerprintSimilarity(fpDoc, fpC); // 0..1
       if (sim > bestSim) bestSim = sim;
 
-      if (sim >= threshold) {
+      const aboveThreshold = sim >= threshold;
+
+      // Catat SEMUA kandidat yang punya kemiripan, bukan hanya yang lolos
+      // threshold. Kalau tidak, similarity bisa dilaporkan (mis. 18%) tanpa
+      // satu pun sumber yang menjelaskan dari mana angka itu berasal.
+      if (sim > 0) {
+        sources.push({
+          id_corpus: cand.id_corpus,
+          title: c.title,
+          similarity: sim,
+          approx: cand.approx,
+          above_threshold: aboveThreshold,
+        });
+      }
+
+      if (aboveThreshold) {
         const spans = buildMatchSpans(fpDoc, fpC, k);
-        // simpan span-span sebagai baris check_match (MVP: insert beberapa span)
-        for (const s of spans.slice(0, 50)) {
+        // Ambil span terpanjang lebih dulu, lalu kembalikan ke urutan posisi
+        // supaya highlight tersebar merata di seluruh dokumen.
+        const topSpans = [...spans]
+          .sort(
+            (a, b) =>
+              b.doc_span_end - b.doc_span_start - (a.doc_span_end - a.doc_span_start)
+          )
+          .slice(0, MAX_SPANS_PER_SOURCE)
+          .sort((a, b) => a.doc_span_start - b.doc_span_start);
+
+        for (const s of topSpans) {
           matchesToInsert.push({
             source_type: "corpus",
             source_id: cand.id_corpus,
-            doc_span_start: s.doc_span_start,
-            doc_span_end: s.doc_span_end,
-            src_span_start: s.src_span_start,
-            src_span_end: s.src_span_end,
+            doc_span_start: s.doc_span_start + docOffset,
+            doc_span_end: s.doc_span_end + docOffset,
+            src_span_start: s.src_span_start + cOffset,
+            src_span_end: s.src_span_end + cOffset,
             match_score: sim,
             snippet_hash: s.snippet_hash,
           });
@@ -247,10 +297,12 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
 
     const similarityPercent = Math.round(bestSim * 10000) / 100; // 2 decimals
 
+    sources.sort((a, b) => b.similarity - a.similarity);
+
     const summary = {
       params: { id_params: params.id_params, k, w, threshold },
       exclude_metadata: excludeMetadata,
-      candidates: candidates.map((x) => ({ id_corpus: x.id_corpus, title: x.title, approx: x.approx })),
+      sources,
       best_similarity: bestSim,
     };
 
@@ -308,6 +360,7 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
       threshold,
       exclude_metadata: excludeMetadata,
       candidates_count: candidates.length,
+      sources_count: sources.length,
       matches_inserted: matchesToInsert.length,
     });
   } catch (e: any) {
@@ -403,6 +456,10 @@ router.get("/:id", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRe
     // mode pengecekan dokumen ini (true = metadata dikecualikan)
     const excludeMetadata = readExcludeMetadata(result?.summary_json);
 
+    // daftar sumber corpus + similarity-nya, termasuk yang di bawah threshold
+    const sources = readSources(result?.summary_json);
+    const threshold = readThreshold(result?.summary_json);
+
     // return doc preview text utuh untuk highlight (tidak dipotong)
     const preview = (req.query.preview as string | undefined) !== "0";
     let doc_preview_text: string | null = null;
@@ -419,6 +476,8 @@ router.get("/:id", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRe
       check,
       result,
       matches,
+      sources,
+      threshold,
       doc_preview_text,
       excluded_ranges,
       exclude_metadata: excludeMetadata,

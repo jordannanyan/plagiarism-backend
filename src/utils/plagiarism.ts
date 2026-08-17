@@ -1,14 +1,72 @@
 import crypto from "crypto";
 
-export type Fingerprint = { hash: bigint; pos: number }; // pos = index char
+export type Fingerprint = {
+  hash: bigint;
+  /** index karakter pada teks TERNORMALISASI */
+  pos: number;
+  /** offset awal k-gram pada teks ASLI (untuk highlight) */
+  srcStart: number;
+  /** offset akhir k-gram pada teks ASLI, exclusive */
+  srcEnd: number;
+};
 
-function normalize(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/\r\n/g, "\n")
-    .replace(/[^\p{L}\p{N}\s]+/gu, " ") // keep letters/numbers, remove punctuation
-    .replace(/\s+/g, " ")
-    .trim();
+type NormalizedText = {
+  text: string;
+  /** mapStart[i] = offset awal karakter ke-i pada teks asli */
+  mapStart: number[];
+  /** mapEnd[i] = offset akhir (exclusive) karakter ke-i pada teks asli */
+  mapEnd: number[];
+};
+
+/**
+ * Normalisasi teks sekaligus mencatat asal setiap karakter pada teks asli.
+ *
+ * Hasil `text` identik dengan normalisasi lama (lowercase, tanda baca jadi
+ * pemisah, deretan pemisah dipadatkan jadi satu spasi, di-trim). Bedanya kini
+ * ada `map` supaya posisi fingerprint bisa dikembalikan ke koordinat teks asli.
+ * Tanpa peta ini highlight akan meleset, karena setiap tanda baca yang dibuang
+ * dan setiap deretan spasi yang dipadatkan menggeser posisi sesudahnya.
+ */
+function normalizeWithMap(input: string): NormalizedText {
+  const chars: string[] = [];
+  const mapStart: number[] = [];
+  const mapEnd: number[] = [];
+
+  let pendingSeparator = false;
+  let prevWordEnd = 0;
+
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    const isWordChar = /[\p{L}\p{N}]/u.test(ch);
+
+    if (!isWordChar) {
+      // whitespace maupun tanda baca sama-sama diperlakukan sebagai pemisah
+      if (chars.length > 0) pendingSeparator = true;
+      continue;
+    }
+
+    if (pendingSeparator) {
+      // Satu spasi sintetis mewakili seluruh deretan pemisah. Awalnya dipetakan
+      // ke awal kata berikutnya dan akhirnya ke akhir kata sebelumnya, supaya
+      // span yang diawali/diakhiri spasi berhenti tepat di batas kata dan tidak
+      // menyorot potongan whitespace atau satu huruf kata tetangga.
+      chars.push(" ");
+      mapStart.push(i);
+      mapEnd.push(prevWordEnd);
+      pendingSeparator = false;
+    }
+
+    // toLowerCase bisa menghasilkan lebih dari satu karakter untuk sebagian
+    // huruf, jadi setiap keluaran dipetakan ke indeks sumber yang sama.
+    for (const c of ch.toLowerCase()) {
+      chars.push(c);
+      mapStart.push(i);
+      mapEnd.push(i + 1);
+    }
+    prevWordEnd = i + 1;
+  }
+
+  return { text: chars.join(""), mapStart, mapEnd };
 }
 
 // rolling-friendly hash (stable)
@@ -22,12 +80,29 @@ function hash64(str: string): bigint {
   return x;
 }
 
-export function makeKgrams(text: string, k: number): { gram: string; pos: number }[] {
-  const t = normalize(text);
+export type Kgram = {
+  gram: string;
+  /** index pada teks ternormalisasi */
+  pos: number;
+  /** rentang k-gram ini pada teks asli */
+  srcStart: number;
+  srcEnd: number;
+};
+
+export function makeKgrams(text: string, k: number): Kgram[] {
+  const { text: t, mapStart, mapEnd } = normalizeWithMap(text);
   if (t.length < k) return [];
-  const grams: { gram: string; pos: number }[] = [];
+  const grams: Kgram[] = [];
   for (let i = 0; i <= t.length - k; i++) {
-    grams.push({ gram: t.slice(i, i + k), pos: i });
+    const srcStart = mapStart[i];
+    grams.push({
+      gram: t.slice(i, i + k),
+      pos: i,
+      srcStart,
+      // k-gram yang seluruhnya spasi (hanya mungkin saat k = 1) bisa membuat
+      // end < start, jadi dijaga agar rentangnya tidak terbalik.
+      srcEnd: Math.max(mapEnd[i + k - 1], srcStart),
+    });
   }
   return grams;
 }
@@ -37,7 +112,12 @@ export function winnow(text: string, k: number, w: number): Fingerprint[] {
   const grams = makeKgrams(text, k);
   if (grams.length === 0) return [];
 
-  const hashes = grams.map((g) => ({ h: hash64(g.gram), pos: g.pos }));
+  const hashes = grams.map((g) => ({
+    h: hash64(g.gram),
+    pos: g.pos,
+    srcStart: g.srcStart,
+    srcEnd: g.srcEnd,
+  }));
 
   const windowSize = Math.max(1, w);
   const fps: Fingerprint[] = [];
@@ -54,7 +134,7 @@ export function winnow(text: string, k: number, w: number): Fingerprint[] {
 
     // winnowing rule: avoid duplicates
     if (min.pos !== lastPickedPos || min.h !== lastPickedHash) {
-      fps.push({ hash: min.h, pos: min.pos });
+      fps.push({ hash: min.h, pos: min.pos, srcStart: min.srcStart, srcEnd: min.srcEnd });
       lastPickedPos = min.pos;
       lastPickedHash = min.h;
     }
@@ -137,27 +217,47 @@ export function estimateMinhashSim(sigA: bigint[], sigB: bigint[]): number {
   return same / n;
 }
 
-/** Build spans from matching hashes (simple grouping) */
+/**
+ * Build spans from matching hashes (simple grouping).
+ *
+ * Penggabungan span diputuskan pada koordinat TERNORMALISASI (di situlah jarak
+ * "k karakter" punya arti), tetapi rentang yang dikembalikan sudah dalam
+ * koordinat teks ASLI supaya bisa langsung dipakai untuk highlight.
+ */
 export function buildMatchSpans(
   fpA: Fingerprint[],
   fpB: Fingerprint[],
   k: number
 ): { doc_span_start: number; doc_span_end: number; src_span_start: number; src_span_end: number; match_score: number; snippet_hash: string }[] {
-  const mapB = new Map<string, number[]>(); // hash -> positions
+  const mapB = new Map<string, { start: number; end: number }[]>(); // hash -> rentang pada teks asli B
   for (const x of fpB) {
     const key = x.hash.toString();
     const arr = mapB.get(key) ?? [];
-    arr.push(x.pos);
+    arr.push({ start: x.srcStart, end: x.srcEnd });
     mapB.set(key, arr);
   }
 
-  const matches: { hash: string; aPos: number; bPos: number }[] = [];
+  const matches: {
+    hash: string;
+    aPos: number; // ternormalisasi, untuk grouping
+    aStart: number;
+    aEnd: number; // teks asli
+    bStart: number;
+    bEnd: number;
+  }[] = [];
   for (const a of fpA) {
     const key = a.hash.toString();
-    const bPosList = mapB.get(key);
-    if (bPosList && bPosList.length) {
+    const bList = mapB.get(key);
+    if (bList && bList.length) {
       // pick first position for MVP
-      matches.push({ hash: key, aPos: a.pos, bPos: bPosList[0] });
+      matches.push({
+        hash: key,
+        aPos: a.pos,
+        aStart: a.srcStart,
+        aEnd: a.srcEnd,
+        bStart: bList[0].start,
+        bEnd: bList[0].end,
+      });
     }
   }
 
@@ -167,17 +267,45 @@ export function buildMatchSpans(
   matches.sort((x, y) => x.aPos - y.aPos);
 
   // group contiguous by small gap
-  const spans: any[] = [];
-  let cur = { docStart: matches[0].aPos, docEnd: matches[0].aPos + k, srcStart: matches[0].bPos, srcEnd: matches[0].bPos + k, hash: matches[0].hash };
+  type Span = {
+    posStart: number;
+    posEnd: number;
+    docStart: number;
+    docEnd: number;
+    srcStart: number;
+    srcEnd: number;
+    hash: string;
+  };
+
+  const spans: Span[] = [];
+  const first = matches[0];
+  let cur: Span = {
+    posStart: first.aPos,
+    posEnd: first.aPos + k,
+    docStart: first.aStart,
+    docEnd: first.aEnd,
+    srcStart: first.bStart,
+    srcEnd: first.bEnd,
+    hash: first.hash,
+  };
 
   for (let i = 1; i < matches.length; i++) {
     const m = matches[i];
-    if (m.aPos <= cur.docEnd + k) {
-      cur.docEnd = m.aPos + k;
-      cur.srcEnd = m.bPos + k;
+    if (m.aPos <= cur.posEnd + k) {
+      cur.posEnd = m.aPos + k;
+      cur.docEnd = Math.max(cur.docEnd, m.aEnd);
+      cur.srcEnd = Math.max(cur.srcEnd, m.bEnd);
     } else {
       spans.push(cur);
-      cur = { docStart: m.aPos, docEnd: m.aPos + k, srcStart: m.bPos, srcEnd: m.bPos + k, hash: m.hash };
+      cur = {
+        posStart: m.aPos,
+        posEnd: m.aPos + k,
+        docStart: m.aStart,
+        docEnd: m.aEnd,
+        srcStart: m.bStart,
+        srcEnd: m.bEnd,
+        hash: m.hash,
+      };
     }
   }
   spans.push(cur);
@@ -188,7 +316,9 @@ export function buildMatchSpans(
     doc_span_end: s.docEnd,
     src_span_start: s.srcStart,
     src_span_end: s.srcEnd,
-    match_score: Math.min(1, (s.docEnd - s.docStart) / (docLen * k)),
+    // skor dihitung dari panjang ternormalisasi supaya tidak terpengaruh
+    // banyaknya tanda baca / spasi pada teks asli
+    match_score: Math.min(1, (s.posEnd - s.posStart) / (docLen * k)),
     snippet_hash: s.hash,
   }));
 }

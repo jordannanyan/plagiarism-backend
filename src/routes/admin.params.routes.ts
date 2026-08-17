@@ -59,7 +59,12 @@ router.get("/", auth, requireRole("admin"), async (req: AuthedRequest, res) => {
 
 /**
  * POST /api/admin/params
- * body: { k, w, base, threshold, active_from? }
+ * body: { k, w, base, threshold, active_from?, activate? }
+ *
+ * activate (default true): jadikan params baru langsung aktif. Karena sistem
+ * hanya boleh punya SATU params aktif (fingerprint tidak comparable antar
+ * parameter berbeda), semua params yang masih aktif otomatis ditutup dulu.
+ * Kalau activate=false, baris dibuat dalam keadaan tidak aktif.
  */
 router.post("/", auth, requireRole("admin"), async (req: AuthedRequest, res) => {
   const ip = getClientIp(req);
@@ -71,6 +76,7 @@ router.post("/", auth, requireRole("admin"), async (req: AuthedRequest, res) => 
       base?: number;
       threshold?: number;
       active_from?: string;
+      activate?: boolean;
     };
 
     const k = Number(body.k);
@@ -85,22 +91,52 @@ router.post("/", auth, requireRole("admin"), async (req: AuthedRequest, res) => 
       return res.status(400).json({ ok: false, message: "threshold must be between 0 and 1" });
     }
 
-    const activeFrom = body.active_from ? new Date(body.active_from) : new Date();
+    const activate = body.activate === undefined ? true : Boolean(body.activate);
+
+    // Kalau langsung diaktifkan, active_from harus NOW() supaya tidak ada celah
+    // waktu tanpa params aktif setelah params lama ditutup.
+    const activeFrom = activate
+      ? new Date()
+      : body.active_from
+      ? new Date(body.active_from)
+      : new Date();
     if (Number.isNaN(activeFrom.getTime())) {
       return res.status(400).json({ ok: false, message: "active_from must be a valid datetime" });
     }
 
-    const [ins] = await db.query<any>(
-      `INSERT INTO algoritma_params (k, w, base, threshold, active_from, active_to)
-       VALUES (?, ?, ?, ?, ?, NULL)`,
-      [k, w, base, threshold, activeFrom]
-    );
+    const conn = await db.getConnection();
+    let newId: number;
+    try {
+      await conn.beginTransaction();
 
-    const newId = ins.insertId as number;
+      if (activate) {
+        // single-active invariant: tutup semua params yang masih aktif
+        await conn.query(
+          `UPDATE algoritma_params
+           SET active_to = NOW()
+           WHERE active_to IS NULL OR active_to > NOW()`
+        );
+      }
+
+      const [ins] = await conn.query<any>(
+        `INSERT INTO algoritma_params (k, w, base, threshold, active_from, active_to)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        // active_to = active_from => baris langsung dianggap tidak aktif
+        [k, w, base, threshold, activeFrom, activate ? null : activeFrom]
+      );
+
+      newId = ins.insertId as number;
+      await conn.commit();
+    } catch (e) {
+      await conn.rollback();
+      throw e;
+    } finally {
+      conn.release();
+    }
 
     await audit({
       user_id: req.user!.id,
-      action: "ADMIN_CREATE_PARAMS",
+      action: activate ? "ADMIN_CREATE_ACTIVATE_PARAMS" : "ADMIN_CREATE_PARAMS",
       entity: "algoritma_params",
       entity_id: newId,
       ip_addr: ip,
@@ -114,7 +150,7 @@ router.post("/", auth, requireRole("admin"), async (req: AuthedRequest, res) => 
       [newId]
     );
 
-    return res.status(201).json({ ok: true, params: rows[0] });
+    return res.status(201).json({ ok: true, params: rows[0], activated: activate });
   } catch (e: any) {
     return res.status(500).json({ ok: false, message: e?.message ?? "Server error" });
   }

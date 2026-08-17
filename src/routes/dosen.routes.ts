@@ -4,6 +4,7 @@ import { db } from "../db";
 import { auth, AuthedRequest } from "../middleware/auth";
 import { requireRole } from "../middleware/role";
 import { stripUncheckableSections } from "../utils/textExtract";
+import { readExcludeMetadata, readSources, readThreshold } from "../utils/checkSummary";
 
 const router = Router();
 
@@ -21,17 +22,6 @@ function readTextSafe(p: string): string {
   } catch {
     return "";
   }
-}
-
-/**
- * Baca flag exclude_metadata dari summary_json. Default true (record lama).
- */
-function readExcludeMetadata(summaryJson: any): boolean {
-  try {
-    const obj = typeof summaryJson === "string" ? JSON.parse(summaryJson) : summaryJson;
-    if (obj && typeof obj.exclude_metadata === "boolean") return obj.exclude_metadata;
-  } catch {}
-  return true;
 }
 
 /**
@@ -316,6 +306,10 @@ router.get("/results/:resultId/detail", auth, requireRole("dosen"), async (req: 
     // mode pengecekan: true = metadata (penulis/univ/daftar pustaka) dikecualikan
     const excludeMetadata = readExcludeMetadata(row.summary_json);
 
+    // daftar sumber corpus + similarity-nya, termasuk yang di bawah threshold
+    const sources = readSources(row.summary_json);
+    const threshold = readThreshold(row.summary_json);
+
     const [mRows] = await db.query<any[]>(
       `
       SELECT cm.*, cd.title AS corpus_title
@@ -354,6 +348,8 @@ router.get("/results/:resultId/detail", auth, requireRole("dosen"), async (req: 
         created_at: row.result_created_at,
       },
       matches: mRows,
+      sources,
+      threshold,
       doc_preview_text,
       excluded_ranges,
       exclude_metadata: excludeMetadata,
