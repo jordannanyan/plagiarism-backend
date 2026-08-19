@@ -16,12 +16,8 @@ import { readExcludeMetadata, readSources, readThreshold } from "../utils/checkS
 
 const router = Router();
 
-/**
- * Batas jumlah span match yang disimpan per sumber. Span dipilih berdasarkan
- * PANJANG (paling bermakna), bukan urutan posisi — kalau dipotong menurut
- * posisi, bagian akhir dokumen tidak akan pernah tersorot sama sekali.
- */
-const MAX_SPANS_PER_SOURCE = 200;
+/** Batas jumlah span match yang disimpan per sumber. */
+const MAX_SPANS_PER_SOURCE = 50;
 
 function getClientIp(req: any): string | null {
   const xf = req.headers["x-forwarded-for"];
@@ -270,17 +266,8 @@ router.post("/", auth, requireRole("mahasiswa", "dosen"), async (req: AuthedRequ
 
       if (aboveThreshold) {
         const spans = buildMatchSpans(fpDoc, fpC, k);
-        // Ambil span terpanjang lebih dulu, lalu kembalikan ke urutan posisi
-        // supaya highlight tersebar merata di seluruh dokumen.
-        const topSpans = [...spans]
-          .sort(
-            (a, b) =>
-              b.doc_span_end - b.doc_span_start - (a.doc_span_end - a.doc_span_start)
-          )
-          .slice(0, MAX_SPANS_PER_SOURCE)
-          .sort((a, b) => a.doc_span_start - b.doc_span_start);
-
-        for (const s of topSpans) {
+        // simpan span-span sebagai baris check_match (MVP: insert beberapa span)
+        for (const s of spans.slice(0, MAX_SPANS_PER_SOURCE)) {
           matchesToInsert.push({
             source_type: "corpus",
             source_id: cand.id_corpus,
